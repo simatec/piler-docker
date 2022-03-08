@@ -63,17 +63,18 @@ git clone https://github.com/simatec/piler-docker.git
 cd /opt/piler-docker
 ```
 
-configure your Piler seetings
+* configure your Piler seetings
 
 ```
 nano piler.conf
 ```
 
-after config start the Install
+* after config start the Install
 
 ```
 bash install-piler.sh
 ```
+
 
 Congratulations your Piler is installed...
 
