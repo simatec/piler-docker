@@ -16,11 +16,13 @@ https://www.mailpiler.org/
 * Install Docker
 
 `curl -sSL https://get.docker.com/ | CHANNEL=stable sh`
+
 `systemctl enable --now docker`
 
 * Install Docker-Compose
 
 `curl -L https://github.com/docker/compose/releases/download/$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose`
+
 `chmod +x /usr/local/bin/docker-compose`
 
 * reboot your system
