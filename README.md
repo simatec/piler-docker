@@ -1,5 +1,17 @@
 # piler-docker
 
+[![License](https://img.shields.io/github/license/simatec/piler-docker?style=flat)](https://github.com/simatec/ioBroker.solax/blob/master/LICENSE)
+[![Donate](https://img.shields.io/badge/paypal-donate%20|%20spenden-blue.svg)](https://paypal.me/mk1676)
+
+
+**************************************************************************************************************
+
+**If you like it, please consider a donation:**
+  
+[![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q4EEXQ6U96ZTQ&source=url)
+
+**************************************************************************************************************
+
 
 ### Mailpiler for Docker
 
