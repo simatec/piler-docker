@@ -15,6 +15,8 @@ https://www.mailpiler.org/
 
 * Install Docker
 
+`apt install curl git -y`
+
 `curl -sSL https://get.docker.com/ | CHANNEL=stable sh`
 
 `systemctl enable --now docker`
@@ -31,13 +33,15 @@ https://www.mailpiler.org/
 
 * remove postfix
 
-`apt purge postfix`
+`apt purge postfix -y`
 
 * Clone repository
 
-`cd /opt
-clone https://github.com/simatec/piler-docker.git
-cd /opt/piler-docker`
+`cd /opt`
+
+`git clone https://github.com/simatec/piler-docker.git`
+
+`cd /opt/piler-docker`
 
 configure your Piler seetings
 
@@ -45,7 +49,7 @@ configure your Piler seetings
 
 after config start the Install
 
-`./install-piler.sh`
+`bash install-piler.sh`
 
 Congratulations your Piler is installed...
 

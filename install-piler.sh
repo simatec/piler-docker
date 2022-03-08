@@ -3,22 +3,34 @@
 . ./piler.conf
 ln -s ./piler.conf .env
 
-# docker stop
+# docker start
+echo
+echo "==================================="
 echo "start docker-compose for Piler"
+echo "==================================="
+echo
 
-cd /opt/piler
+cd /opt/piler-docker
 docker-compose up -d
 
+echo
+echo "==================================="
 echo "backup the File config-site.php"
-cp /var/lib/docker/volumes/piler_piler_etc/_data/config-site.php /var/lib/docker/volumes/piler_piler_etc/_data/config-site.php.bak
+echo "==================================="
+echo
 
+cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak
+
+echo
+echo "==================================="
 echo "set User settings ..."
-
-cat >> /var/lib/docker/volumes/piler_piler_etc/_data/config-site.php <<EOF
+echo "==================================="
+echo
+cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
 
 // Smarthost
-$config['SMARTHOST'] = '$SMARTHOST';
-$config['SMARTHOST_PORT'] = '25';
+\$config['SMARTHOST'] = '$SMARTHOST';
+\$config['SMARTHOST_PORT'] = '25';
 
 // CUSTOM
 \$config['PROVIDED_BY'] = '$PILER_DOMAIN';
@@ -73,26 +85,39 @@ EOF
 
 if [ "$USE_MAILCOW" = true ] ; then
 
+echo
+echo "==================================="
 echo "set Mailcow Api-Key config"
+echo "==================================="
+echo
 
-cat >> /var/lib/docker/volumes/piler_piler_etc/_data/config-site.php <<EOF
+cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
 
 // Mailcow API
-$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
-$config['MAILCOW_SET_REALNAME'] = true;
-$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+\$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
+\$config['MAILCOW_SET_REALNAME'] = true;
+\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
 include('auth-mailcow.php');
 EOF
 
-curl -o /var/lib/docker/volumes/piler_piler_etc/_data/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
+curl -o /var/lib/docker/volumes/piler-docker_piler_etc/_data/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
 
 # docker start
+echo
+echo "==================================="
 echo "restart docker-compose ..."
+echo "==================================="
+echo
 
-cd /opt/piler
+cd /opt/piler-docker
 docker-compose restart
 
+echo
+echo "======================================================================="
 echo "Piler install completed successfully"
-echo "you can start in your Browser with http://${PILER_DOMAIN}!"
+echo
+echo "you can start in your Browser with http://${PILER_DOMAIN}:8080!"
+echo "======================================================================="
+echo
