@@ -19,7 +19,12 @@ echo "backup the File config-site.php"
 echo "==================================="
 echo
 
-cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak
+if [ ! -f /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak ]; then
+    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak
+else
+    rm /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php
+    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php
+fi
 
 echo
 echo "==================================="
@@ -104,7 +109,7 @@ EOF
 curl -o /var/lib/docker/volumes/piler-docker_piler_etc/_data/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
 
-# docker start
+# docker restart
 echo
 echo "==================================="
 echo "restart docker-compose ..."
