@@ -15,41 +15,41 @@ https://www.mailpiler.org/
 
 * Install Docker
 
-`apt install curl git -y`
+```apt install curl git -y```
 
-`curl -sSL https://get.docker.com/ | CHANNEL=stable sh`
+```curl -sSL https://get.docker.com/ | CHANNEL=stable sh```
 
-`systemctl enable --now docker`
+```systemctl enable --now docker```
 
 * Install Docker-Compose
 
-`curl -L https://github.com/docker/compose/releases/download/$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose`
+```curl -L https://github.com/docker/compose/releases/download/$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose```
 
-`chmod +x /usr/local/bin/docker-compose`
+```chmod +x /usr/local/bin/docker-compose```
 
 * reboot your system
 
-`reboot now`
+```reboot now```
 
 * remove postfix
 
-`apt purge postfix -y`
+```apt purge postfix -y```
 
 * Clone repository
 
-`cd /opt`
+```cd /opt```
 
-`git clone https://github.com/simatec/piler-docker.git`
+```git clone https://github.com/simatec/piler-docker.git```
 
-`cd /opt/piler-docker`
+```cd /opt/piler-docker```
 
 configure your Piler seetings
 
-`nano piler.conf`
+```nano piler.conf```
 
 after config start the Install
 
-`bash install-piler.sh`
+```bash install-piler.sh```
 
 Congratulations your Piler is installed...
 
