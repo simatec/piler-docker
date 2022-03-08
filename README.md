@@ -53,6 +53,37 @@ after config start the Install
 
 Congratulations your Piler is installed...
 
+The Piler can now be reached at http://your-domain:8080.
+
+* SSL certificates
+
+If you want to run your Piler with SSL certificates, which always makes sense if the Piler isn't running locally, then I recommend the Nginx proxy manager for Docker.
+
+I built my setup with the Nginx.
+
+The Ngnix can be installed with the following compose.
+
+Create a docker-compose.yml file similar to this:
+
+``
+version: '3'
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+``
+
+``
+docker-compose up -d
+``
+
 **********************************************************************************************************
 
 ## Changelog
