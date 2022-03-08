@@ -65,7 +65,7 @@ The Ngnix can be installed with the following compose.
 
 Create a docker-compose.yml file similar to this:
 
-``
+```
 version: '3'
 services:
   app:
@@ -78,11 +78,11 @@ services:
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
-``
+```
 
-``
+```
 docker-compose up -d
-``
+```
 
 **********************************************************************************************************
 
