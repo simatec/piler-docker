@@ -79,7 +79,8 @@ Congratulations your Piler is installed...
 
 The Piler can now be reached at http://your-domain:8080.
 
-- After installation, any changes can be made in Piler.conf at any time and the install script can then be run again.
+
+> After installation, any changes can be made in Piler.conf at any time and the install script can then be run again.
 
 
 ******************************************************************************************************
