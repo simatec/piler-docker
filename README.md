@@ -8,7 +8,7 @@
 
 **If you like it, please consider a donation:**
   
-[![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q4EEXQ6U96ZTQ&source=url)
+[![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://paypal.me/mk1676)
 
 **************************************************************************************************************
 
@@ -109,6 +109,12 @@ services:
 ```
 docker-compose up -d
 ```
+
+Log in to the Admin UI
+When your docker container is running, connect to it on port 81 for the admin interface. Sometimes this can take a little bit because of the entropy of keys.
+
+http://your-domain:81
+
 
 **********************************************************************************************************
 
