@@ -1,6 +1,6 @@
 # piler-docker
 
-[![License](https://img.shields.io/github/license/simatec/piler-docker?style=flat)](https://github.com/simatec/ioBroker.solax/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/simatec/piler-docker?style=flat)](https://github.com/simatec/piler-docker/blob/master/LICENSE)
 [![Donate](https://img.shields.io/badge/paypal-donate%20|%20spenden-blue.svg)](https://paypal.me/mk1676)
 
 
@@ -78,6 +78,8 @@ bash install-piler.sh
 Congratulations your Piler is installed...
 
 The Piler can now be reached at http://your-domain:8080.
+
+******************************************************************************************************
 
 * SSL certificates
 
