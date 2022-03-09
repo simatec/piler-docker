@@ -23,7 +23,9 @@ fi
 HLINE="=================================================================="
 
 . ./piler.conf
-ln -s ./piler.conf .env
+if [ ! -f /opt/piler-docker/.env ]; then
+    ln -s ./piler.conf .env
+fi
 
 if [ -f /opt/piler-docker/docker-compose.yml ]; then
     rm /opt/piler-docker/docker-compose.yml
@@ -47,7 +49,7 @@ done
 # docker start
 echo
 echo "${greenBold}${HLINE}"
-echo "${greenBold}start docker-compose for Piler"
+echo "${greenBold}                 start docker-compose for Piler"
 echo "${greenBold}${HLINE}${normal}"
 echo
 
@@ -59,7 +61,7 @@ if [ "$USE_LETSENCRYPT" = "yes" ]; then
 
         echo
         echo "${blue}${HLINE}"
-        echo "${blue}docker network created"
+        echo "${blue}               docker network created"
         echo "${blue}${HLINE}${normal}"
         echo
     fi
@@ -69,7 +71,7 @@ docker-compose up -d
 
 echo
 echo "${blue}${HLINE}"
-echo "${blue}backup the File config-site.php"
+echo "${blue}             backup the File config-site.php"
 echo "${blue}${HLINE}${normal}"
 echo
 
@@ -82,7 +84,7 @@ fi
 
 echo
 echo "${blue}${HLINE}"
-echo "${blue}set User settings ..."
+echo "${blue}                  set User settings ..."
 echo "${blue}${HLINE}${normal}"
 echo
 
@@ -167,7 +169,7 @@ fi
 # docker restart
 echo
 echo "${blue}${HLINE}"
-echo "${blue}restart docker-compose ..."
+echo "${blue}                  restart docker-compose ..."
 echo "${blue}${HLINE}${normal}"
 echo
 
@@ -176,12 +178,16 @@ docker-compose restart
 
 echo
 echo "${greenBold}${HLINE}"
-echo "${greenBold}Piler install completed successfully"
+echo "${greenBold}             Piler install completed successfully"
+echo "${greenBold}${HLINE}${normal}"
 echo
+echo
+echo "${greenBold}${HLINE}"
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
 else
-    echo "${greenBold}you can start in your Browser with http://${PILER_DOMAIN} or http://local-ip!"
+    echo "${greenBold}you can start in your Browser with: http://${PILER_DOMAIN} or http://local-ip!"
+    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
 fi
 echo "${greenBold}${HLINE}${normal}"
 echo
