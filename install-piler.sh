@@ -1,22 +1,76 @@
 #!/bin/bash
 
+# Colors
+if [ -z ${BASH_SOURCE} ]; then
+	blue=`echo "\e[1m\e[34m"`
+	green=`echo "\e[1m\e[32m"`
+	greenBold=`echo "\e[1m\e[1;32m"`
+	redBold=`echo "\e[1m\e[1;31m"`
+	red=`echo "\e[1m\e[31m"`
+	purple=`echo "\e[1m\e[35m"`
+	bold=`echo "\e[1m"`
+  	normal=`echo "\e[0m"`
+else
+  	blue=`echo -e "\e[1m\e[34m"`
+  	green=`echo -e "\e[1m\e[32m"`
+  	greenBold=`echo -e "\e[1m\e[1;32m"`
+	redBold=`echo -e "\e[1m\e[1;31m"`
+	puple=`echo -e "\e[1m\e[35m"`
+	bold=`echo -e "\e[1m"`
+  	normal=`echo -en "\e[0m"`
+fi
+
+HLINE="=================================================================="
+
 . ./piler.conf
 ln -s ./piler.conf .env
 
+if [ -f /opt/piler-docker/docker-compose.yml ]; then
+    rm /opt/piler-docker/docker-compose.yml
+fi
+
+if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    cp /opt/piler-docker/config/piler-ssl.yml /opt/piler-docker/docker-compose.yml
+else
+    cp /opt/piler-docker/config/piler-default.yml /opt/piler-docker/docker-compose.yml
+fi
+
+while true; do
+    read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
+    case $yn in
+        [Yy]* ) apt purge postfix -y; break;;
+        [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
+        * ) echo -e "${red} Please confirm with y or n.";;
+    esac
+done
+
 # docker start
 echo
-echo "==================================="
-echo "start docker-compose for Piler"
-echo "==================================="
+echo "${greenBold}${HLINE}"
+echo "${greenBold}start docker-compose for Piler"
+echo "${greenBold}${HLINE}${normal}"
 echo
 
 cd /opt/piler-docker
+
+if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    if ! docker network ls | grep -o "nginx-proxy"; then
+        docker network create nginx-proxy
+
+        echo
+        echo "${blue}${HLINE}"
+        echo "${blue}docker network created"
+        echo "${blue}${HLINE}${normal}"
+        echo
+    fi
+fi
+
 docker-compose up -d
 
 echo
-echo "==================================="
-echo "backup the File config-site.php"
-echo "==================================="
+echo "${blue}${HLINE}"
+echo "${blue}backup the File config-site.php"
+echo "${blue}${HLINE}${normal}"
 echo
 
 if [ ! -f /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak ]; then
@@ -27,10 +81,11 @@ else
 fi
 
 echo
-echo "==================================="
-echo "set User settings ..."
-echo "==================================="
+echo "${blue}${HLINE}"
+echo "${blue}set User settings ..."
+echo "${blue}${HLINE}${normal}"
 echo
+
 cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
 
 // Smarthost
@@ -88,12 +143,12 @@ cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EO
 //\$config['LDAP_DISTRIBUTIONLIST_ATTR'] = 'mailAlternativeAddress';
 EOF
 
-if [ "$USE_MAILCOW" = true ] ; then
+if [ "$USE_MAILCOW" = true ]; then
 
 echo
-echo "==================================="
+echo "${blue}${HLINE}"
 echo "set Mailcow Api-Key config"
-echo "==================================="
+echo "${blue}${HLINE}${normal}"
 echo
 
 cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
@@ -111,18 +166,22 @@ fi
 
 # docker restart
 echo
-echo "==================================="
-echo "restart docker-compose ..."
-echo "==================================="
+echo "${blue}${HLINE}"
+echo "${blue}restart docker-compose ..."
+echo "${blue}${HLINE}${normal}"
 echo
 
 cd /opt/piler-docker
 docker-compose restart
 
 echo
-echo "======================================================================="
-echo "Piler install completed successfully"
+echo "${greenBold}${HLINE}"
+echo "${greenBold}Piler install completed successfully"
 echo
-echo "you can start in your Browser with http://${PILER_DOMAIN}:8080!"
-echo "======================================================================="
+if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
+else
+    echo "${greenBold}you can start in your Browser with http://${PILER_DOMAIN} or http://local-ip!"
+fi
+echo "${greenBold}${HLINE}${normal}"
 echo

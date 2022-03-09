@@ -49,12 +49,6 @@ chmod +x /usr/local/bin/docker-compose
 reboot now
 ```
 
-* remove postfix
-
-```
-apt purge postfix -y
-```
-
 * Clone repository
 
 ```
@@ -78,52 +72,20 @@ bash install-piler.sh
 
 Congratulations your Piler is installed...
 
-The Piler can now be reached at http://your-domain:8080.
+If you have Let's Encrypt activated, you can reach the Piler at https://your-piler-domain
+
+If Let's Encrypt is disabled, the Piler is at http://your-piler-domain or at http://your-local-IP
 
 
 > After installation, any changes can be made in piler.conf at any time and the install script can then be run again.
 
 
-******************************************************************************************************
-
-### SSL certificates
-
-If you want to run your Piler with SSL certificates, which always makes sense if the Piler isn't running locally, then I recommend the Nginx proxy manager for Docker.
-
-I built my setup with the Nginx.
-
-The Ngnix can be installed with the following compose.
-
-Create a docker-compose.yml file similar to this:
-
-```
-version: '3'
-services:
-  app:
-    image: 'jc21/nginx-proxy-manager:latest'
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
-    volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
-```
-
-```
-docker-compose up -d
-```
-
-Log in to the Admin UI
-When your docker container is running, connect to it on port 81 for the admin interface. Sometimes this can take a little bit because of the entropy of keys.
-
-http://your-domain:81
-
-
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.2.0 (09.03.2022)
+* (simatec) Let's Encrypt added
 
 ### 0.1.0 (08.03.2022)
 * (simatec) first beta

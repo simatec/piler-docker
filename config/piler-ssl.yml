@@ -1,9 +1,30 @@
 version: "3"
 services:
-
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-data/certs:/etc/nginx/certs
+      - ./nginx-data/vhost.d:/etc/nginx/vhost.d
+      - ./nginx-data/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  nginx-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-letsencrypt
+    restart: always
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
   mysql:
     image: mariadb:10.5
-    container_name: mysql_piler
+    container_name: mysql-piler
     restart: unless-stopped
     cap_drop:
       - ALL
@@ -29,7 +50,7 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: memcached_piler
+    container_name: memcached-piler
     restart: unless-stopped
     cap_drop:
       - ALL
@@ -39,6 +60,8 @@ services:
     image: sutoj/piler:1.3.11
     container_name: piler
     restart: unless-stopped
+    expose:
+      - "80"
     hostname: ${PILER_DOMAIN}
     init: true
     environment:
@@ -49,10 +72,11 @@ services:
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - MEMCACHED_HOST=memcached
       - TZ=Europe/Berlin
+      - VIRTUAL_HOST=${PILER_DOMAIN}
+      - LETSENCRYPT_HOST=${PILER_DOMAIN}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     ports:
       - "25:25"
-      - "8080:80"
-      - "8443:443"
     volumes:
       - piler_etc:/etc/piler
       - piler_var:/var/piler
@@ -74,7 +98,12 @@ services:
       - "memcached"
       - "mysql"
 
+networks:
+  default:
+    external:
+      name: nginx-proxy
+
 volumes:
-  db_data: {}
-  piler_etc: {}
-  piler_var: {}
+  db_data:
+  piler_etc:
+  piler_var:
