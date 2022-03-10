@@ -69,6 +69,8 @@ fi
 
 docker-compose up -d
 
+sleep 5
+
 echo
 echo "${blue}${HLINE}"
 echo "${blue}             backup the File config-site.php"
@@ -143,6 +145,10 @@ cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EO
 //\$config['LDAP_ACCOUNT_OBJECTCLASS'] = 'person';
 //\$config['LDAP_DISTRIBUTIONLIST_OBJECTCLASS'] = 'person';
 //\$config['LDAP_DISTRIBUTIONLIST_ATTR'] = 'mailAlternativeAddress';
+
+// special settings.
+//\$config['MEMCACHED_ENABLED'] = 1;
+\$config['SPHINX_STRICT_SCHEMA'] = 1; // required for Sphinx see https://bitbucket.org/jsuto/piler/issues/1085/sphinx-331.
 EOF
 
 if [ "$USE_MAILCOW" = true ]; then
@@ -165,6 +171,22 @@ EOF
 
 curl -o /var/lib/docker/volumes/piler-docker_piler_etc/_data/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
+
+# add config settings
+
+if [ ! -f /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak ]; then
+    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak
+else
+    rm /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+fi
+
+sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+
+cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf <<EOF
+queuedir=/var/piler/store
+EOF
 
 # docker restart
 echo

@@ -82,7 +82,43 @@ If Let's Encrypt is disabled, the Piler is at http://your-piler-domain or at htt
 
 **********************************************************************************************************
 
+### Using the Piler on the command line
+
+For use on the command line, we first log into the container.
+
+```
+docker exec -it piler /bin/bash
+```
+
+Next we switch to the user "piler"
+
+```
+su piler
+```
+
+To get write permissions, we switch to the /var/tmp folder
+
+```
+cd /var/tmp
+```
+
+Here you can now execute the functions of the Piler on the command line.
+Here are some examples:
+
+```
+pilerimport -h
+crontab -l
+```
+
+To leave the container on the console you have to execute 2x `exit`.
+
+
+**********************************************************************************************************
+
 ## Changelog
+
+### 0.3.0 (10.03.2022)
+* (simatec) purge option added to config
 
 ### 0.2.0 (09.03.2022)
 * (simatec) Let's Encrypt added
