@@ -57,7 +57,7 @@ git clone https://github.com/simatec/piler-docker.git
 cd /opt/piler-docker
 ```
 
-* configure your Piler seetings
+* configure your Piler settings
 
 ```
 nano piler.conf
@@ -116,6 +116,9 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.4.0 (20.04.2022)
+* (simatec) small fixes
 
 ### 0.3.0 (10.03.2022)
 * (simatec) purge option added to config

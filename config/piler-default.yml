@@ -16,7 +16,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
-      - "TZ=Europe/Berlin"
+      - TZ="Europe/Berlin"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
@@ -48,7 +48,7 @@ services:
       - MYSQL_HOSTNAME=mysql
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - MEMCACHED_HOST=memcached
-      - TZ=Europe/Berlin
+      - TZ="Europe/Berlin"
     ports:
       - "25:25"
       - "80:80"
@@ -56,7 +56,8 @@ services:
     volumes:
       - piler_etc:/etc/piler
       - piler_var:/var/piler
-      - /etc/localtime:/etc/localtime
+      - piler_cron:/var/spool/cron/crontabs
+      - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: curl -s smtp://localhost/
       interval: "60s"
@@ -78,3 +79,4 @@ volumes:
   db_data: {}
   piler_etc: {}
   piler_var: {}
+  piler_cron: {}
