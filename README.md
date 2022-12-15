@@ -25,22 +25,10 @@ https://www.mailpiler.org/
 
 ### Installation Guide:
 
-* Install Docker
+* Install Docker and dependencies
 
 ```
-apt install curl git -y
-```
-
-```
-curl -sSL https://get.docker.com/ | CHANNEL=stable sh
-systemctl enable --now docker
-```
-
-* Install Docker-Compose
-
-```
-curl -L https://github.com/docker/compose/releases/download/$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+apt install curl git docker.io docker-compose-plugin -y
 ```
 
 * reboot your system
@@ -116,6 +104,10 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.5.1 (15.12.2022)
+* (simatec) update piler to v1.4.1
+* (simatec) update mariadb to v10.9.4
 
 ### 0.5.0 (25.08.2022)
 * (simatec) update piler to 1.3.12
