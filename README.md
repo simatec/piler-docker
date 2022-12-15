@@ -28,7 +28,7 @@ https://www.mailpiler.org/
 * Install Docker and dependencies
 
 ```
-apt install curl git docker.io docker-compose-plugin -y
+apt install curl git docker.io docker-compose -y
 ```
 
 * reboot your system
