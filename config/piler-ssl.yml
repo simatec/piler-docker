@@ -57,7 +57,7 @@ services:
     command: -m 64
 
   piler:
-    image: sutoj/piler:1.3.12
+    image: sutoj/piler:1.4.2
     container_name: piler
     restart: unless-stopped
     expose:
