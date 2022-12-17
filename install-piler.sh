@@ -45,6 +45,9 @@ while true; do
         * ) echo -e "${red} Please confirm with y or n.";;
     esac
 done
+# old docker stop
+cd /opt/piler-docker
+docker-compose down
 
 # docker start
 echo
@@ -69,7 +72,8 @@ fi
 
 docker-compose up -d
 
-sleep 5
+echo "${blue}********* Piler started.... Please wait........"
+sleep 20
 
 echo
 echo "${blue}${HLINE}"
@@ -188,15 +192,15 @@ cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf <<EOF
 queuedir=/var/piler/store
 EOF
 
-# docker restart
+# piler restart
 echo
 echo "${blue}${HLINE}"
-echo "${blue}                  restart docker-compose ..."
+echo "${blue}                  restart piler ..."
 echo "${blue}${HLINE}${normal}"
 echo
 
 cd /opt/piler-docker
-docker-compose restart
+docker-compose restart piler
 
 echo
 echo "${greenBold}${HLINE}"
