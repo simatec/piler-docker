@@ -50,8 +50,8 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
-installPth = "/opt/piler-docker"
-configPth = "/opt/piler-docker/config"
+installPth="/opt/piler-docker"
+configPth="/opt/piler-docker/config"
 
 # config load
 . ./piler.conf

@@ -49,9 +49,9 @@ BLA::stop_loading_animation() {
 }
 
 #######################################################################################
-installPth = "/opt/piler-docker"
-configPth = "/opt/piler-docker/config"
-etcPth = "/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+installPth="/opt/piler-docker"
+configPth="/opt/piler-docker/config"
+etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
 # Load config
 . ./piler.conf
