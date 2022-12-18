@@ -22,19 +22,52 @@ fi
 
 HLINE="=================================================================="
 
+BLA_metro=( 0.2 '    ' '=   ' '==  ' '=== ' ' ===' '  ==' '   =' )
+
+BLA::play_loading_animation_loop() {
+  while true ; do
+    for frame in "${BLA_active_loading_animation[@]}" ; do
+      printf "\r%s" "${frame}"
+      sleep "${BLA_loading_animation_frame_interval}"
+    done
+  done
+}
+
+BLA::start_loading_animation() {
+  BLA_active_loading_animation=( "${@}" )
+  BLA_loading_animation_frame_interval="${BLA_active_loading_animation[0]}"
+  unset "BLA_active_loading_animation[0]"
+  tput civis # Hide the terminal cursor
+  BLA::play_loading_animation_loop &
+  BLA_loading_animation_pid="${!}"
+}
+
+BLA::stop_loading_animation() {
+  kill "${BLA_loading_animation_pid}" &> /dev/null
+  printf "\n"
+  tput cnorm # Restore the terminal cursor
+}
+
+#######################################################################################
+installPth = "/opt/piler-docker"
+configPth = "/opt/piler-docker/config"
+etcPth = "/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+
+# Load config
 . ./piler.conf
-if [ ! -f /opt/piler-docker/.env ]; then
+
+if [ ! -f $installPth/.env ]; then
     ln -s ./piler.conf .env
 fi
 
-if [ -f /opt/piler-docker/docker-compose.yml ]; then
-    rm /opt/piler-docker/docker-compose.yml
+if [ -f $installPth/docker-compose.yml ]; then
+    rm $installPth/docker-compose.yml
 fi
 
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    cp /opt/piler-docker/config/piler-ssl.yml /opt/piler-docker/docker-compose.yml
+    cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
 else
-    cp /opt/piler-docker/config/piler-default.yml /opt/piler-docker/docker-compose.yml
+    cp $configPth/piler-default.yml $installPth/docker-compose.yml
 fi
 
 while true; do
@@ -45,8 +78,9 @@ while true; do
         * ) echo -e "${red} Please confirm with y or n.";;
     esac
 done
+
 # old docker stop
-cd /opt/piler-docker
+cd $installPth
 docker-compose down
 
 # docker start
@@ -56,7 +90,7 @@ echo "${greenBold}                 start docker-compose for Piler"
 echo "${greenBold}${HLINE}${normal}"
 echo
 
-cd /opt/piler-docker
+cd $installPth
 
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     if ! docker network ls | grep -o "nginx-proxy"; then
@@ -72,8 +106,11 @@ fi
 
 docker-compose up -d
 
-echo "${blue}********* Piler started.... Please wait........"
+echo "${blue}********* Piler started... Please wait... *********"
+
+BLA::start_loading_animation "${BLA_metro[@]}"
 sleep 20
+BLA::stop_loading_animation
 
 echo
 echo "${blue}${HLINE}"
@@ -81,11 +118,11 @@ echo "${blue}             backup the File config-site.php"
 echo "${blue}${HLINE}${normal}"
 echo
 
-if [ ! -f /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak ]; then
-    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak
+if [ ! -f $etcPth/config-site.php.bak ]; then
+    cp $etcPth/config-site.php $etcPth/config-site.php.bak
 else
-    rm /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php
-    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php.bak /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php
+    rm $etcPth/config-site.php
+    cp $etcPth/config-site.php.bak $etcPth/config-site.php
 fi
 
 echo
@@ -94,7 +131,7 @@ echo "${blue}                       set User settings ..."
 echo "${blue}${HLINE}${normal}"
 echo
 
-cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
+cat >> $etcPth/config-site.php <<EOF
 
 // Smarthost
 \$config['SMARTHOST'] = '$SMARTHOST';
@@ -163,7 +200,7 @@ echo "set Mailcow Api-Key config"
 echo "${blue}${HLINE}${normal}"
 echo
 
-cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EOF
+cat >> $etcPth/config-site.php <<EOF
 
 // Mailcow API
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
@@ -173,22 +210,22 @@ cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php <<EO
 include('auth-mailcow.php');
 EOF
 
-curl -o /var/lib/docker/volumes/piler-docker_piler_etc/_data/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
+curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
 
 # add config settings
 
-if [ ! -f /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak ]; then
-    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak
+if [ ! -f $etcPth/piler.conf.bak ]; then
+    cp $etcPth/piler.conf $etcPth/piler.conf.bak
 else
-    rm /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
-    cp /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf.bak /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+    rm $etcPth/piler.conf
+    cp $etcPth/piler.conf.bak $etcPth/piler.conf
 fi
 
-sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
-sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf
+sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
+sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" $etcPth/piler.conf
 
-cat >> /var/lib/docker/volumes/piler-docker_piler_etc/_data/piler.conf <<EOF
+cat >> $etcPth/piler.conf <<EOF
 queuedir=/var/piler/store
 EOF
 
@@ -199,7 +236,7 @@ echo "${blue}                  restart piler ..."
 echo "${blue}${HLINE}${normal}"
 echo
 
-cd /opt/piler-docker
+cd $installPth
 docker-compose restart piler
 
 echo

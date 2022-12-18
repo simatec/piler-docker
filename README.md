@@ -82,6 +82,25 @@ If Let's Encrypt is disabled, the Piler is at http://your-piler-domain or at htt
 
 **********************************************************************************************************
 
+
+### Update Guide:
+
+You can execute the following commands to update the containers.
+Here the current yml files are downloaded from Github and the containers are updated if necessary.
+
+```
+cd /opt/piler-docker
+bash update.sh
+```
+
+* After a successful update, unused container images can be removed from the system with the following command:
+
+```
+docker system prune
+```
+
+**********************************************************************************************************
+
 ### Using the Piler on the command line
 
 For use on the command line, we first log into the container.
@@ -116,6 +135,10 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+### 0.6.0 (18.12.2022)
+* (simatec) Update Installer
+* (simatec) update.sh added
+* (simatec) downgrade mariadb to v10.5
 
 ### 0.5.3 (17.12.2022)
 * (simatec) Installer Fix
