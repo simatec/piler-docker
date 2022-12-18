@@ -50,6 +50,15 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
+while true; do
+    read -ep "Do you want to perform the update?? (y/n): " yn
+    case $yn in
+        [Yy]* ) echo "${greenBold}********* Update started... Please wait... *********${normal}"; break;;
+        [Nn]* ) echo -e "${redBold}    The update is canceled!${normal}"; exit;;
+        * ) echo -e "${red} Please confirm with y or n.";;
+    esac
+done
+
 installPth="/opt/piler-docker"
 configPth="/opt/piler-docker/config"
 
@@ -74,8 +83,14 @@ echo
 cd $configPth
 
 # Update yml
+echo
+echo "${purple}${HLINE}"
+echo "${purple}****** Download Update files piler-default.yml ******"
 curl -OL https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-default.yml
+echo "${purple}****** Download Update files piler-ssl.yml ******"
 curl -OL https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-ssl.yml
+echo "${purple}${HLINE}${normal}"
+echo
 
 # old docker stop
 cd $installPth
@@ -109,7 +124,7 @@ fi
 
 docker-compose up --force-recreate --build -d
 
-echo "${blue}********* Piler started... Please wait... *********"
+echo "${blue}********* Piler started... Please wait... *********${normal}"
 
 BLA::start_loading_animation "${BLA_metro[@]}"
 sleep 10
