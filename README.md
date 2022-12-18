@@ -138,7 +138,7 @@ To leave the container on the console you have to execute 2x `exit`.
 ### 0.6.0 (18.12.2022)
 * (simatec) Update Installer
 * (simatec) update.sh added
-* (simatec) downgrade mariadb to v10.5
+* (simatec) downgrade mariadb to v10.6
 
 ### 0.5.3 (17.12.2022)
 * (simatec) Installer Fix
