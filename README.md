@@ -33,13 +33,17 @@ apt install curl git -y
 
 ```
 curl -sSL https://get.docker.com/ | CHANNEL=stable sh
+```
+```
 systemctl enable --now docker
 ```
 
 * Install Docker-Compose
 
 ```
-curl -L https://github.com/docker/compose/releases/download/$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
+curl -L https://github.com/docker/compose/releases/download/v$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
+```
+```
 chmod +x /usr/local/bin/docker-compose
 ```
 
@@ -53,7 +57,11 @@ reboot now
 
 ```
 cd /opt
+```
+```
 git clone https://github.com/simatec/piler-docker.git
+```
+```
 cd /opt/piler-docker
 ```
 
