@@ -2,22 +2,22 @@
 
 # Colors
 if [ -z ${BASH_SOURCE} ]; then
-	blue=`echo "\e[1m\e[34m"`
-	green=`echo "\e[1m\e[32m"`
-	greenBold=`echo "\e[1m\e[1;32m"`
-	redBold=`echo "\e[1m\e[1;31m"`
-	red=`echo "\e[1m\e[31m"`
-	purple=`echo "\e[1m\e[35m"`
-	bold=`echo "\e[1m"`
-  	normal=`echo "\e[0m"`
+  blue=`echo "\e[1m\e[34m"`
+  green=`echo "\e[1m\e[32m"`
+  greenBold=`echo "\e[1m\e[1;32m"`
+  redBold=`echo "\e[1m\e[1;31m"`
+  red=`echo "\e[1m\e[31m"`
+  purple=`echo "\e[1m\e[35m"`
+  bold=`echo "\e[1m"`
+  normal=`echo "\e[0m"`
 else
-  	blue=`echo -e "\e[1m\e[34m"`
-  	green=`echo -e "\e[1m\e[32m"`
-  	greenBold=`echo -e "\e[1m\e[1;32m"`
-	redBold=`echo -e "\e[1m\e[1;31m"`
-	puple=`echo -e "\e[1m\e[35m"`
-	bold=`echo -e "\e[1m"`
-  	normal=`echo -en "\e[0m"`
+  blue=`echo -e "\e[1m\e[34m"`
+  green=`echo -e "\e[1m\e[32m"`
+  greenBold=`echo -e "\e[1m\e[1;32m"`
+  redBold=`echo -e "\e[1m\e[1;31m"`
+  purple=`echo -e "\e[1m\e[35m"`
+  bold=`echo -e "\e[1m"`
+  normal=`echo -en "\e[0m"`
 fi
 
 HLINE="=================================================================="
@@ -92,7 +92,7 @@ echo "${purple}****** Download Update files piler-ssl.yml ******"
 curl -OL https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-ssl.yml
 echo "${purple}${HLINE}${normal}"
 echo
-
+nano 
 # old docker stop
 cd $installPth
 
