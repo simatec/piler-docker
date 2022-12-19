@@ -61,6 +61,7 @@ done
 
 installPth="/opt/piler-docker"
 configPth="/opt/piler-docker/config"
+etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
 # config load
 . ./piler.conf
@@ -127,8 +128,129 @@ docker-compose up --force-recreate --build -d
 echo "${blue}********* Piler started... Please wait... *********${normal}"
 
 BLA::start_loading_animation "${BLA_metro[@]}"
-sleep 10
+sleep 20
 BLA::stop_loading_animation
+
+if [ ! -f $etcPth/config-site.php.bak ]; then
+    cp $etcPth/config-site.php $etcPth/config-site.php.bak
+else
+    rm $etcPth/config-site.php
+    cp $etcPth/config-site.php.bak $etcPth/config-site.php
+fi
+
+echo
+echo "${blue}${HLINE}"
+echo "${blue}                       set User settings ..."
+echo "${blue}${HLINE}${normal}"
+echo
+
+cat >> $etcPth/config-site.php <<EOF
+
+// Smarthost
+\$config['SMARTHOST'] = '$SMARTHOST';
+\$config['SMARTHOST_PORT'] = '25';
+
+// CUSTOM
+\$config['PROVIDED_BY'] = '$PILER_DOMAIN';
+\$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
+\$config['COMPATIBILITY'] = '';
+
+// fancy features.
+\$config['ENABLE_INSTANT_SEARCH'] = 1;
+\$config['ENABLE_TABLE_RESIZE'] = 1;
+
+\$config['ENABLE_DELETE'] = 1;
+\$config['ENABLE_ON_THE_FLY_VERIFICATION'] = 1;
+
+// general settings.
+\$config['TIMEZONE'] = '$TIME_ZONE';
+
+// authentication
+// Enable authentication against an imap server
+\$config['ENABLE_IMAP_AUTH'] = 1;
+\$config['RESTORE_OVER_IMAP'] = 1;
+\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
+\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
+\$config['IMAP_HOST'] = '$IMAP_SERVER';
+\$config['IMAP_PORT'] =  993;
+\$config['IMAP_SSL'] = true;
+
+// authentication against an ldap directory (disabled by default)
+//\$config['ENABLE_LDAP_AUTH'] = 1;
+//\$config['LDAP_HOST'] = '$SMARTHOST';
+//\$config['LDAP_PORT'] = 389;
+//\$config['LDAP_HELPER_DN'] = 'cn=administrator,cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
+//\$config['LDAP_MAIL_ATTR'] = 'mail';
+//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
+//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
+//\$config['LDAP_BASE_DN'] = 'ou=Benutzer,dc=krs,dc=local';
+
+// authentication against an Uninvention based ldap directory 
+//\$config['ENABLE_LDAP_AUTH'] = 1;
+//\$config['LDAP_HOST'] = '$SMARTHOST';
+//\$config['LDAP_PORT'] = 7389;
+//\$config['LDAP_HELPER_DN'] = 'uid=ldap-search-user,cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
+//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
+//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
+//\$config['LDAP_BASE_DN'] = 'cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_MAIL_ATTR'] = 'mailPrimaryAddress';
+//\$config['LDAP_ACCOUNT_OBJECTCLASS'] = 'person';
+//\$config['LDAP_DISTRIBUTIONLIST_OBJECTCLASS'] = 'person';
+//\$config['LDAP_DISTRIBUTIONLIST_ATTR'] = 'mailAlternativeAddress';
+
+// special settings.
+//\$config['MEMCACHED_ENABLED'] = 1;
+\$config['SPHINX_STRICT_SCHEMA'] = 1; // required for Sphinx see https://bitbucket.org/jsuto/piler/issues/1085/sphinx-331.
+EOF
+
+if [ "$USE_MAILCOW" = true ]; then
+
+echo
+echo "${blue}${HLINE}"
+echo "set Mailcow Api-Key config"
+echo "${blue}${HLINE}${normal}"
+echo
+
+cat >> $etcPth/config-site.php <<EOF
+
+// Mailcow API
+\$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
+\$config['MAILCOW_SET_REALNAME'] = true;
+\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+include('auth-mailcow.php');
+EOF
+
+curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
+fi
+
+# add config settings
+
+if [ ! -f $etcPth/piler.conf.bak ]; then
+    cp $etcPth/piler.conf $etcPth/piler.conf.bak
+else
+    rm $etcPth/piler.conf
+    cp $etcPth/piler.conf.bak $etcPth/piler.conf
+fi
+
+sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
+sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" $etcPth/piler.conf
+
+cat >> $etcPth/piler.conf <<EOF
+queuedir=/var/piler/store
+EOF
+
+# piler restart
+echo
+echo "${blue}${HLINE}"
+echo "${blue}                  restart piler ..."
+echo "${blue}${HLINE}${normal}"
+echo
+
+cd $installPth
+docker-compose restart piler
 
 echo
 echo "${greenBold}${HLINE}"
