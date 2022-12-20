@@ -55,6 +55,7 @@ services:
       - "443:443"
     volumes:
       - piler_etc:/etc/piler
+      - piler_www:/var/piler/www
       - piler_var:/var/piler
       - piler_cron:/var/spool/cron/crontabs
       - /etc/localtime:/etc/localtime:ro
@@ -76,7 +77,8 @@ services:
       - "mysql"
 
 volumes:
-  db_data: {}
-  piler_etc: {}
-  piler_var: {}
-  piler_cron: {}
+  db_data:
+  piler_etc:
+  piler_www:
+  piler_var:
+  piler_cron:
