@@ -81,18 +81,18 @@ echo "${greenBold}                 Download Update files for Piler"
 echo "${greenBold}${HLINE}${normal}"
 echo
 
-cd $configPth
+#cd $configPth
 
 # Update yml
 echo
 echo "${purple}${HLINE}"
 echo "${purple}****** Download Update files piler-default.yml ******"
-curl -OL https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-default.yml
+curl -o $configPth/piler-default.yml https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-default.yml
 echo "${purple}****** Download Update files piler-ssl.yml ******"
-curl -OL https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-ssl.yml
+curl -o $configPth/piler-ssl.yml https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-ssl.yml
 echo "${purple}${HLINE}${normal}"
 echo
-nano 
+
 # old docker stop
 cd $installPth
 
