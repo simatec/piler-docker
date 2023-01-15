@@ -48,15 +48,17 @@ services:
       - MYSQL_HOSTNAME=mysql
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - MEMCACHED_HOST=memcached
-      - TZ="Europe/Berlin"
+      - TZ=${TIME_ZONE}
     ports:
       - "25:25"
       - "80:80"
       - "443:443"
     volumes:
       - piler_etc:/etc/piler
-      - piler_www:/var/piler/www
-      - piler_var:/var/piler
+      - piler_var_store:/var/piler/store
+      - piler_var_manticore:/var/piler/manticore
+      - piler_var_imap:/var/piler/imap
+      - piler_var_stat:/var/piler/stat
       - piler_cron:/var/spool/cron/crontabs
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
@@ -79,6 +81,8 @@ services:
 volumes:
   db_data:
   piler_etc:
-  piler_www:
-  piler_var:
+  piler_var_store:
+  piler_var_manticore:
+  piler_var_imap:
+  piler_var_stat:
   piler_cron:

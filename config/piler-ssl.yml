@@ -71,7 +71,7 @@ services:
       - MYSQL_HOSTNAME=mysql
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - MEMCACHED_HOST=memcached
-      - TZ="Europe/Berlin"
+      - TZ=${TIME_ZONE}
       - VIRTUAL_HOST=${PILER_DOMAIN}
       - LETSENCRYPT_HOST=${PILER_DOMAIN}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
@@ -79,8 +79,10 @@ services:
       - "25:25"
     volumes:
       - piler_etc:/etc/piler
-      - piler_www:/var/piler/www
-      - piler_var:/var/piler
+      - piler_var_store:/var/piler/store
+      - piler_var_manticore:/var/piler/manticore
+      - piler_var_imap:/var/piler/imap
+      - piler_var_stat:/var/piler/stat
       - piler_cron:/var/spool/cron/crontabs
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
@@ -106,8 +108,10 @@ networks:
       name: nginx-proxy
 
 volumes:
-  db_data:
+  b_data:
   piler_etc:
-  piler_www:
-  piler_var:
+  piler_var_store:
+  piler_var_manticore:
+  piler_var_imap:
+  piler_var_stat:
   piler_cron:

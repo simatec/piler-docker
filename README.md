@@ -143,6 +143,11 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.7.0 (15.01.2023)
+* (simatec) New Volumes added
+* (simatec) Fix Installer
+
 ### 0.6.0 (18.12.2022)
 * (simatec) Update Installer
 * (simatec) update.sh added
@@ -177,7 +182,7 @@ To leave the container on the console you have to execute 2x `exit`.
 ## License
 MIT License
 
-Copyright (c) 2022 simatec
+Copyright (c) 2022 - 2023 simatec
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
