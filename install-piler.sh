@@ -60,104 +60,109 @@ etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
 ############################## Installer Settings #######################################
 
-# Piler-Domain
-read -ep "Please set your Piler-Domain (Enter for default: piler.example.com): " pilerDomain
-pilerDomain=${pilerDomain:=piler.example.com}
-sed -i 's/PILER_DOMAIN=.*/PILER_DOMAIN="'$pilerDomain'"/g' ./piler.conf
+if [ ! -f $installPth/.configDone ]; then
+    # Piler-Domain
+    read -ep "Please set your Piler-Domain (Enter for default: $PILER_DOMAIN): " pilerDomain
+    pilerDomain=${pilerDomain:=$PILER_DOMAIN}
+    sed -i 's/PILER_DOMAIN=.*/PILER_DOMAIN="'$pilerDomain'"/g' ./piler.conf
 
-# Piler-Admin-Mail
-read -ep "Please set your Mailserver Admin Mail (Enter for default: admin@example.com): " pilerAdminMail
-pilerAdminMail=${pilerAdminMail:=admin@example.com}
-sed -i 's/SUPPORT_MAIL=.*/SUPPORT_MAIL="'$pilerAdminMail'"/g' ./piler.conf
+    # Piler-Admin-Mail
+    read -ep "Please set your Mailserver Admin Mail (Enter for default: $SUPPORT_MAIL): " pilerAdminMail
+    pilerAdminMail=${pilerAdminMail:=$SUPPORT_MAIL}
+    sed -i 's/SUPPORT_MAIL=.*/SUPPORT_MAIL="'$pilerAdminMail'"/g' ./piler.conf
 
-# retention Days
-read -ep "Please set retention days (Enter for default: 2555 Days ~ 7 Years): " retentionDays
-retentionDays=${retentionDays:=2555}
-sed -i 's/DEFAULT_RETENTION_DAYS=.*/DEFAULT_RETENTION_DAYS="'$retentionDays'"/g' ./piler.conf
+    # retention Days
+    read -ep "Please set retention days (Enter for default: $DEFAULT_RETENTION_DAYS Days): " retentionDays
+    retentionDays=${retentionDays:=$DEFAULT_RETENTION_DAYS Days}
+    sed -i 's/DEFAULT_RETENTION_DAYS=.*/DEFAULT_RETENTION_DAYS="'$retentionDays'"/g' ./piler.conf
 
-# Smarthost
-read -ep "Please set your Smarthost (Enter for default: 127.0.0.1). Default settings can be used here!!: " pilerSmartHost
-pilerSmartHost=${pilerSmartHost:=127.0.0.1}
-sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
+    # Smarthost
+    read -ep "Please set your Smarthost (Enter for default: $SMARTHOST). Default settings can be used here!!: " pilerSmartHost
+    pilerSmartHost=${pilerSmartHost:=$SMARTHOST}
+    sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
 
-# IMAP Server
-read -ep "Please set your IMAP Server (Enter for default: imap.example.com): " imapServer
-imapServer=${imapServer:=imap.example.com}
-sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+    # IMAP Server
+    read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+    imapServer=${imapServer:=$IMAP_SERVER}
+    sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
 
-# Timezone
-read -ep "Please set your Timezone (Enter for default: Europe/Berlin): " timeZone
-timeZone=${timeZone:=Europe/Berlin}
-timeZone="${timeZone////\\/}"
-sed -i 's/TIME_ZONE=.*/TIME_ZONE="'$timeZone'"/g' ./piler.conf
+    # Timezone
+    read -ep "Please set your Timezone (Enter for default: $TIME_ZONE): " timeZone
+    timeZone=${timeZone:=$TIME_ZONE}
+    timeZone="${timeZone////\\/}"
+    sed -i 's/TIME_ZONE=.*/TIME_ZONE="'$timeZone'"/g' ./piler.conf
 
-# MySql Database
-read -ep "Please set your MySql Database (Enter for default: piler): " pilerDataBase
-pilerDataBase=${pilerDataBase:=piler}
-sed -i 's/MYSQL_DATABASE=.*/MYSQL_DATABASE="'$pilerDataBase'"/g' ./piler.conf
+    # MySql Database
+    read -ep "Please set your MySql Database (Enter for default: $MYSQL_DATABASE): " pilerDataBase
+    pilerDataBase=${pilerDataBase:=$MYSQL_DATABASE}
+    sed -i 's/MYSQL_DATABASE=.*/MYSQL_DATABASE="'$pilerDataBase'"/g' ./piler.conf
 
-# MySql User
-read -ep "Please set your MySql User (Enter for default: piler): " pilerUser
-pilerUser=${pilerUser:=piler}
-sed -i 's/MYSQL_USER=.*/MYSQL_USER="'$pilerUser'"/g' ./piler.conf
+    # MySql User
+    read -ep "Please set your MySql User (Enter for default: $MYSQL_USER): " pilerUser
+    pilerUser=${pilerUser:=$MYSQL_USER}
+    sed -i 's/MYSQL_USER=.*/MYSQL_USER="'$pilerUser'"/g' ./piler.conf
 
-# MySql Password
-read -sp "Please set your MySql Password: " pilerPassword
-pilerPassword=$pilerPassword
-sed -i 's/MYSQL_PASSWORD=.*/MYSQL_PASSWORD="'$pilerPassword'"/g' ./piler.conf
-echo
+    # MySql Password
+    read -sp "Please set your MySql Password: " pilerPassword
+    pilerPassword=$pilerPassword
+    sed -i 's/MYSQL_PASSWORD=.*/MYSQL_PASSWORD="'$pilerPassword'"/g' ./piler.conf
+    echo
 
-# use Let's Encrypt
-while true; do
-    read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
-    case $jn in
-        [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
-        [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
-        * ) echo -e "${red} Please confirm with Y or N.";;
-    esac
-done
+    # use Let's Encrypt
+    while true; do
+        read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
+            [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
+            * ) echo -e "${red} Please confirm with Y or N.";;
+        esac
+    done
 
-# reload config
-. ./piler.conf
+    # reload config
+    . ./piler.conf
 
-# Let's Encrypt registration contact information
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    read -ep "Please set Let's Encrypt registration contact information (Enter for default: admin@example.com): " acmeContact
-    acmeContact=${acmeContact:=admin@example.com}
-    sed -i 's/LETSENCRYPT_EMAIL=.*/LETSENCRYPT_EMAIL="'$acmeContact'"/g' ./piler.conf
+    # Let's Encrypt registration contact information
+    if [ "$USE_LETSENCRYPT" = "yes" ]; then
+        read -ep "Please set Let's Encrypt registration contact information (Enter for default: $LETSENCRYPT_EMAIL): " acmeContact
+        acmeContact=${acmeContact:=$LETSENCRYPT_EMAIL}
+        sed -i 's/LETSENCRYPT_EMAIL=.*/LETSENCRYPT_EMAIL="'$acmeContact'"/g' ./piler.conf
+    fi
+
+    # use Mailcow
+    while true; do
+        read -ep "If Use Mailcow API Options (yes/no)? / Y|N: " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
+            [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
+            * ) echo -e "${red} Please confirm with Y or N.";;
+        esac
+    done
+
+    # reload config
+    . ./piler.conf
+
+    if [ "$USE_MAILCOW" = true ]; then
+        # Mailcow API-Key
+        read -ep "Please set your Mailcow API-Key (current: $MAILCOW_APIKEY): " apiKey
+        apiKey=${apiKey:=$MAILCOW_APIKEY}
+        sed -i 's/MAILCOW_APIKEY=.*/MAILCOW_APIKEY="'$apiKey'"/g' ./piler.conf
+
+        # Mailcow Host Domain
+        read -ep "Please set your Mailcow Host Domain (Enter for default: $imapServer): " mailcowHost
+        mailcowHost=${mailcowHost:=$imapServer}
+        sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
+    fi
+
+    echo
+    echo "${blue}${HLINE}"
+    echo "All settings were saved in the piler.conf file"
+    echo "and can be adjusted there at any time."
+    echo "${blue}${HLINE}${normal}"
+    echo
+
+    # config done
+    touch $installPth/.configDone
 fi
-
-# use Mailcow
-while true; do
-    read -ep "If Use Mailcow API Options (yes/no)? / Y|N: " jn
-    case $jn in
-        [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
-        [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
-        * ) echo -e "${red} Please confirm with Y or N.";;
-    esac
-done
-
-# reload config
-. ./piler.conf
-
-if [ "$USE_MAILCOW" = true ]; then
-    # Mailcow API-Key
-    read -ep "Please set your Mailcow API-Key: " apiKey
-    apiKey=$apiKey
-    sed -i 's/MAILCOW_APIKEY=.*/MAILCOW_APIKEY="'$apiKey'"/g' ./piler.conf
-
-    # Mailcow Host Domain
-    read -ep "Please set your Mailcow Host Domain (Enter for default: $imapServer): " mailcowHost
-    mailcowHost=${mailcowHost:=$imapServer}
-    sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
-fi
-
-echo
-echo "${blue}${HLINE}"
-echo "All settings were saved in the piler.conf file"
-echo "and can be adjusted there at any time."
-echo "${blue}${HLINE}${normal}"
-echo
 
 # uninstall Postfix
 while true; do
