@@ -65,13 +65,8 @@ git clone https://github.com/simatec/piler-docker.git
 cd /opt/piler-docker
 ```
 
-* configure your Piler settings
 
-```
-nano piler.conf
-```
-
-* after config start the Install
+* start the Install
 
 ```
 bash install-piler.sh
@@ -143,6 +138,9 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.8.0 (17.01.2023)
+* (simatec) Config-Menu for Installer added
 
 ### 0.7.0 (15.01.2023)
 * (simatec) New Volumes added
