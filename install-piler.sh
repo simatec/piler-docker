@@ -15,7 +15,7 @@ else
   	green=`echo -e "\e[1m\e[32m"`
   	greenBold=`echo -e "\e[1m\e[1;32m"`
 	redBold=`echo -e "\e[1m\e[1;31m"`
-	puple=`echo -e "\e[1m\e[35m"`
+	purple=`echo -e "\e[1m\e[35m"`
 	bold=`echo -e "\e[1m"`
   	normal=`echo -en "\e[0m"`
 fi
@@ -52,36 +52,36 @@ BLA::stop_loading_animation() {
 
 # App Check
 for bin in curl docker git; do
-  if [[ -z $(which ${bin}) ]]; then echo "Cannot find ${bin}, exiting..."; exit 1; fi
+  if [[ -z $(which ${bin}) ]]; then echo "${redBold}Cannot find ${bin}, exiting...${normal}"; exit 1; fi
 done
 
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
     if docker compose version --short | grep "^2." > /dev/null 2>&1; then
       COMPOSE_VERSION=native
-      echo -e "${red}Found Docker Compose Plugin (native).${normal}"
-      echo -e "${red}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
+      echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
       sleep 2
       echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
     else
-      echo -e "${red}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
       exit 1
     fi
 elif docker-compose > /dev/null 2>&1; then
   if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
     if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
       COMPOSE_VERSION=standalone
-      echo -e "${red}Found Docker Compose Standalone.${normal}"
-      echo -e "${red}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
+      echo -e "${purple}Found Docker Compose Standalone.${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
       sleep 2
     else
-      echo -e "${red}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
       exit 1
     fi
   fi
 
 else
-  echo -e "${red}Cannot find Docker Compose.${normal}"
+  echo -e "${redBold}Cannot find Docker Compose.${normal}"
   exit 1
 fi
 
@@ -151,7 +151,7 @@ if [ ! -f $installPth/.configDone ]; then
         case $jn in
             [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
-            * ) echo -e "${red} Please confirm with Y or N.";;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
         esac
     done
 
@@ -171,7 +171,7 @@ if [ ! -f $installPth/.configDone ]; then
         case $jn in
             [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
-            * ) echo -e "${red} Please confirm with Y or N.";;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
         esac
     done
 
@@ -222,7 +222,7 @@ while true; do
     case $yn in
         [Yy]* ) apt purge postfix -y; break;;
         [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
-        * ) echo -e "${red} Please confirm with y or n.";;
+        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
     esac
 done
 
@@ -232,7 +232,7 @@ while true; do
     case $yn in
         [Yy]* ) echo -e "${greenBold}Piler install started!! ${normal}"; break;;
         [Nn]* ) echo -e "${redBold}Aborting the Piler installation!! ${normal}"; exit;;
-        * ) echo -e "${red} Please confirm with Y or N.";;
+        * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
     esac
 done
 
