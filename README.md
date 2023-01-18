@@ -93,7 +93,13 @@ Here the current yml files are downloaded from Github and the containers are upd
 
 ```
 cd /opt/piler-docker
-bash update.sh
+bash install.sh
+```
+You will get a selection menu with the following options:
+
+```
+1) Install-Piler
+2) Update-Piler
 ```
 
 * After a successful update, unused container images can be removed from the system with the following command:
@@ -138,6 +144,10 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 0.8.2 (18.01.2023)
+* (simatec) docker, curl and git Check added
+* (simatec) Update Config added
 
 ### 0.8.1 (17.01.2023)
 * (simatec) Docker Compose Check added

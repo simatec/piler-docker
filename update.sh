@@ -50,6 +50,43 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
+# App Check
+for bin in curl docker git; do
+  if [[ -z $(which ${bin}) ]]; then echo "Cannot find ${bin}, exiting..."; exit 1; fi
+done
+
+# Docker-Compose Check
+if docker compose > /dev/null 2>&1; then
+    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=native
+      echo -e "${red}Found Docker Compose Plugin (native).${normal}"
+      echo -e "${red}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
+      sleep 2
+      echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
+    else
+      echo -e "${red}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+elif docker-compose > /dev/null 2>&1; then
+  if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
+    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=standalone
+      echo -e "${red}Found Docker Compose Standalone.${normal}"
+      echo -e "${red}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
+      sleep 2
+    else
+      echo -e "${red}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+  fi
+
+else
+  echo -e "${red}Cannot find Docker Compose.${normal}"
+  exit 1
+fi
+
+#######################################################################################
+
 while true; do
     read -ep "Do you want to perform the update?? (y/n): " yn
     case $yn in
@@ -96,7 +133,11 @@ echo
 # old docker stop
 cd $installPth
 
-docker-compose down
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose down
+else
+    docker-compose down
+fi
 
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
@@ -123,7 +164,11 @@ if [ "$USE_LETSENCRYPT" = "yes" ]; then
     fi
 fi
 
-docker-compose up --force-recreate --build -d
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose up --force-recreate --build -d
+else
+    docker-compose up --force-recreate --build -d
+fi
 
 echo "${blue}********* Piler started... Please wait... *********${normal}"
 
@@ -250,7 +295,12 @@ echo "${blue}${HLINE}${normal}"
 echo
 
 cd $installPth
-docker-compose restart piler
+
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose restart piler
+else
+    docker-compose restart piler
+fi
 
 echo
 echo "${greenBold}${HLINE}"

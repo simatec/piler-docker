@@ -50,6 +50,11 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
+# App Check
+for bin in curl docker git; do
+  if [[ -z $(which ${bin}) ]]; then echo "Cannot find ${bin}, exiting..."; exit 1; fi
+done
+
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
     if docker compose version --short | grep "^2." > /dev/null 2>&1; then
@@ -80,6 +85,8 @@ else
   exit 1
 fi
 
+#######################################################################################
+
 # Path-Settings
 installPth="/opt/piler-docker"
 configPth="/opt/piler-docker/config"
@@ -88,7 +95,7 @@ etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 # Load config
 . ./piler.conf
 
-############################## Installer Settings #######################################
+############################## Installer Settings ######################################
 
 if [ ! -f $installPth/.configDone ]; then
     # Piler-Domain
@@ -192,6 +199,21 @@ if [ ! -f $installPth/.configDone ]; then
 
     # config done
     touch $installPth/.configDone
+
+elif [ -f $installPth/.configDone ]; then
+    select name in Install-Piler Update-Piler
+    do
+        if [ $name = "Install-Piler" ]; then
+            echo
+            echo "${blue}Ready for: $name${normal}" && break
+            echo
+        elif [ $name = "Update-Piler" ]; then
+            echo
+            echo "${blue}Ready for: $name${normal}"
+            echo
+            bash $installPth/update.sh && exit 1
+        fi
+    done
 fi
 
 # uninstall Postfix
