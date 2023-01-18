@@ -93,7 +93,7 @@ Here the current yml files are downloaded from Github and the containers are upd
 
 ```
 cd /opt/piler-docker
-bash install.sh
+bash install-piler.sh
 ```
 You will get a selection menu with the following options:
 
