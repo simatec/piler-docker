@@ -51,6 +51,14 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
+echo
+echo "${greenBold}${HLINE_SMALL}"
+echo "Welcome to Piler-Docker Installer"
+echo "${greenBold}${HLINE_SMALL}${normal}"
+echo
+
+#######################################################################################
+
 # App Check
 for bin in curl docker git; do
   if [[ -z $(which ${bin}) ]]; then echo "${redBold}Cannot find ${bin}, exiting...${normal}"; exit 1; fi
