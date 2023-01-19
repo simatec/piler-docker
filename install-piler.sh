@@ -212,7 +212,7 @@ if [ ! -f $installPth/.configDone ]; then
 elif [ -f $installPth/.configDone ]; then
     # Load config
     . ./piler.conf
-    
+
     select name in Install-Piler Update-Piler
     do
         if [ $name = "Install-Piler" ]; then
@@ -227,7 +227,7 @@ elif [ -f $installPth/.configDone ]; then
             for fileUpdate in update.sh README.md; do
                 echo "${purple}${HLINE}${HLINE_SMALL}"
                 echo "${purple}****** Download Update $fileUpdate ******"
-                curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$fileUpdate
+                curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
                 echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
                 echo
             done
