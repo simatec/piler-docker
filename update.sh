@@ -125,7 +125,7 @@ for ymlUpdate in piler-default.yml piler-ssl.yml; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $ymlUpdate ******"
-  curl -o $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
+  curl -o -f $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done
@@ -134,7 +134,7 @@ for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $fileUpdate ******"
-  curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$fileUpdate
+  curl -o -f $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done
@@ -277,7 +277,7 @@ cat >> $etcPth/config-site.php <<EOF
 include('auth-mailcow.php');
 EOF
 
-curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
+curl -o -f $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
 
 # add config settings
