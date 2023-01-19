@@ -145,6 +145,9 @@ To leave the container on the console you have to execute 2x `exit`.
 
 ## Changelog
 
+### 0.8.3 (19.01.2023)
+* (simatec) Update himself added
+
 ### 0.8.2 (18.01.2023)
 * (simatec) docker, curl and git Check added
 * (simatec) Update Config added

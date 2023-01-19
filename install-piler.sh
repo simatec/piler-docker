@@ -21,6 +21,7 @@ else
 fi
 
 HLINE="=================================================================="
+HLINE_SMALL="==============================="
 
 BLA_metro=( 0.2 '    ' '=   ' '==  ' '=== ' ' ===' '  ==' '   =' )
 
@@ -88,16 +89,24 @@ fi
 #######################################################################################
 
 # Path-Settings
-installPth="/opt/piler-docker"
-configPth="/opt/piler-docker/config"
+installPth=`pwd`
+configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
-
-# Load config
-. ./piler.conf
 
 ############################## Installer Settings ######################################
 
 if [ ! -f $installPth/.configDone ]; then
+
+    # create config
+    if [ ! -f $installPth/piler.conf ]; then
+        if [ -f $installPth/piler.conf.example ]; then
+            cp $installPth/piler.conf.example $installPth/piler.conf
+        fi
+    fi
+
+    # Load config
+    . ./piler.conf
+
     # Piler-Domain
     read -ep "Please set your Piler-Domain (Enter for default: $PILER_DOMAIN): " pilerDomain
     pilerDomain=${pilerDomain:=$PILER_DOMAIN}
@@ -201,6 +210,9 @@ if [ ! -f $installPth/.configDone ]; then
     touch $installPth/.configDone
 
 elif [ -f $installPth/.configDone ]; then
+    # Load config
+    . ./piler.conf
+    
     select name in Install-Piler Update-Piler
     do
         if [ $name = "Install-Piler" ]; then
@@ -211,6 +223,15 @@ elif [ -f $installPth/.configDone ]; then
             echo
             echo "${blue}Ready for: $name${normal}"
             echo
+
+            for fileUpdate in update.sh README.md; do
+                echo "${purple}${HLINE}${HLINE_SMALL}"
+                echo "${purple}****** Download Update $fileUpdate ******"
+                curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$fileUpdate
+                echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+                echo
+            done
+
             bash $installPth/update.sh && exit 1
         fi
     done
@@ -437,12 +458,12 @@ echo "${greenBold}             Piler install completed successfully"
 echo "${greenBold}${HLINE}${normal}"
 echo
 echo
-echo "${greenBold}${HLINE}"
+echo "${greenBold}${HLINE}${HLINE_SMALL}"
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
 else
     echo "${greenBold}you can start in your Browser with:"
     echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
 fi
-echo "${greenBold}${HLINE}${normal}"
+echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
 echo
