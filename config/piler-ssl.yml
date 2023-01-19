@@ -108,7 +108,7 @@ networks:
       name: nginx-proxy
 
 volumes:
-  b_data:
+  db_data:
   piler_etc:
   piler_var_store:
   piler_var_manticore:
