@@ -235,7 +235,7 @@ elif [ -f $installPth/.configDone ]; then
             for fileUpdate in update.sh README.md; do
                 echo "${purple}${HLINE}${HLINE_SMALL}"
                 echo "${purple}****** Download Update $fileUpdate ******"
-                curl -o -f $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
+                curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
                 echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
                 echo
             done
@@ -425,7 +425,7 @@ cat >> $etcPth/config-site.php <<EOF
 include('auth-mailcow.php');
 EOF
 
-curl -o -f $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
+curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
 fi
 
 # add config settings
