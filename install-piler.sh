@@ -127,7 +127,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # retention Days
     read -ep "Please set retention days (Enter for default: $DEFAULT_RETENTION_DAYS Days): " retentionDays
-    retentionDays=${retentionDays:=$DEFAULT_RETENTION_DAYS Days}
+    retentionDays=${retentionDays:=$DEFAULT_RETENTION_DAYS}
     sed -i 's/DEFAULT_RETENTION_DAYS=.*/DEFAULT_RETENTION_DAYS="'$retentionDays'"/g' ./piler.conf
 
     # Smarthost
