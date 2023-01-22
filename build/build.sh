@@ -34,3 +34,4 @@ if [ ! -f $buildPth/$PILER_PACKAGE ]; then
 fi
 
 docker build --build-arg PACKAGE="$PILER_PACKAGE" -t "$IMAGE_NAME" .
+exit 0

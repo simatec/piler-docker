@@ -147,7 +147,7 @@ for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
   echo
 done
 
-for buildUpdate in start.sh build.sh DOCKERFILE build.conf; do
+for buildUpdate in start.sh build.sh Dockerfile build.conf; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $buildUpdate ******"
@@ -288,4 +288,4 @@ echo "${blue}You can remove the old unused containers on your system!"
 echo "${blue}Execute the following command: docker system prune"
 echo "${blue}${HLINE}${normal}"
 echo
-exit 1
+exit 0

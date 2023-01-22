@@ -241,7 +241,7 @@ elif [ -f $installPth/.configDone ]; then
                 echo
             done
 
-            bash $installPth/update.sh && exit 1
+            bash $installPth/update.sh && exit 0
         fi
     done
 fi
@@ -480,3 +480,4 @@ else
 fi
 echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
 echo
+exit 0
