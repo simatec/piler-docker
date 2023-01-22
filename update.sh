@@ -226,7 +226,7 @@ BLA::stop_loading_animation
 
 # Restore Config
 cp $installPth/backup/config-site.php.bak $etcPth/ && cp $installPth/backup/config-site.php $etcPth/
-cp $installPth/backup/piler.conf.bak $etcPth/ && cp $etcPth/piler.conf $etcPth/
+cp $installPth/backup/piler.conf.bak $etcPth/ && cp $installPth/backup/piler.conf $etcPth/
 cp $installPth/backup/.my.cnf $etcPth/
 
 if [ "$USE_MAILCOW" = true ]; then
@@ -288,3 +288,4 @@ echo "${blue}You can remove the old unused containers on your system!"
 echo "${blue}Execute the following command: docker system prune"
 echo "${blue}${HLINE}${normal}"
 echo
+exit 1
