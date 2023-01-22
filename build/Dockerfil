@@ -40,7 +40,6 @@ VOLUME ["/var/piler/imap"]
 VOLUME ["/var/piler/stat"]
 VOLUME ["/var/spool/cron/crontabs"]
 
-
 EXPOSE 25 80 443
 
 COPY start.sh /start.sh
