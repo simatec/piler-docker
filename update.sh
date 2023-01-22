@@ -108,6 +108,7 @@ done
 installPth=`pwd`
 configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+buildPth="$installPth/build"
 
 # config load
 . ./piler.conf
@@ -146,6 +147,15 @@ for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
   echo
 done
 
+for buildUpdate in start.sh build.sh DOCKERFILE build.conf; do
+  echo
+  echo "${purple}${HLINE}${HLINE_SMALL}"
+  echo "${purple}****** Download Update $buildUpdate ******"
+  curl -o $buildPth/$buildUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate
+  echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+  echo
+done
+
 # old docker stop
 cd $installPth
 
@@ -155,6 +165,27 @@ else
   docker-compose down
 fi
 
+# Backup Config
+if [ ! -d $installPth/backup ]; then
+  mkdir -p $installPth/backup
+fi
+
+cp $etcPth/config-site.php.bak $installPth/backup/ && cp $etcPth/config-site.php $installPth/backup/
+cp $etcPth/piler.conf.bak $installPth/backup/ && cp $etcPth/piler.conf $installPth/backup/
+cp $etcPth/.my.cnf $installPth/backup/
+
+# delete old files
+rm -f $etcPth/piler.key $etcPth/piler.pem $etcPth/config-site.php
+
+# Added Manticore
+if [ ! -f $etcPth/MANTICORE ]; then
+  touch $etcPth/MANTICORE
+fi
+
+# Build Piler
+bash $buildPth/build.sh
+
+# Copy docker-compose.yml
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
   cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
 else
@@ -192,79 +223,10 @@ BLA::start_loading_animation "${BLA_metro[@]}"
 sleep 20
 BLA::stop_loading_animation
 
-if [ ! -f $etcPth/config-site.php.bak ]; then
-  cp $etcPth/config-site.php $etcPth/config-site.php.bak
-else
-  rm $etcPth/config-site.php
-  cp $etcPth/config-site.php.bak $etcPth/config-site.php
-fi
-
-echo
-echo "${blue}${HLINE}"
-echo "${blue}                       set User settings ..."
-echo "${blue}${HLINE}${normal}"
-echo
-
-cat >> $etcPth/config-site.php <<EOF
-
-// Smarthost
-\$config['SMARTHOST'] = '$SMARTHOST';
-\$config['SMARTHOST_PORT'] = '25';
-
-// CUSTOM
-\$config['PROVIDED_BY'] = '$PILER_DOMAIN';
-\$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
-\$config['COMPATIBILITY'] = '';
-
-// fancy features.
-\$config['ENABLE_INSTANT_SEARCH'] = 1;
-\$config['ENABLE_TABLE_RESIZE'] = 1;
-
-\$config['ENABLE_DELETE'] = 1;
-\$config['ENABLE_ON_THE_FLY_VERIFICATION'] = 1;
-
-// general settings.
-\$config['TIMEZONE'] = '$TIME_ZONE';
-
-// authentication
-// Enable authentication against an imap server
-\$config['ENABLE_IMAP_AUTH'] = 1;
-\$config['RESTORE_OVER_IMAP'] = 1;
-\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
-\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
-\$config['IMAP_HOST'] = '$IMAP_SERVER';
-\$config['IMAP_PORT'] =  993;
-\$config['IMAP_SSL'] = true;
-
-// authentication against an ldap directory (disabled by default)
-//\$config['ENABLE_LDAP_AUTH'] = 1;
-//\$config['LDAP_HOST'] = '$SMARTHOST';
-//\$config['LDAP_PORT'] = 389;
-//\$config['LDAP_HELPER_DN'] = 'cn=administrator,cn=users,dc=mydomain,dc=local';
-//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
-//\$config['LDAP_MAIL_ATTR'] = 'mail';
-//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
-//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
-//\$config['LDAP_BASE_DN'] = 'ou=Benutzer,dc=krs,dc=local';
-
-// authentication against an Uninvention based ldap directory 
-//\$config['ENABLE_LDAP_AUTH'] = 1;
-//\$config['LDAP_HOST'] = '$SMARTHOST';
-//\$config['LDAP_PORT'] = 7389;
-//\$config['LDAP_HELPER_DN'] = 'uid=ldap-search-user,cn=users,dc=mydomain,dc=local';
-//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
-//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
-//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
-//\$config['LDAP_BASE_DN'] = 'cn=users,dc=mydomain,dc=local';
-//\$config['LDAP_MAIL_ATTR'] = 'mailPrimaryAddress';
-//\$config['LDAP_ACCOUNT_OBJECTCLASS'] = 'person';
-//\$config['LDAP_DISTRIBUTIONLIST_OBJECTCLASS'] = 'person';
-//\$config['LDAP_DISTRIBUTIONLIST_ATTR'] = 'mailAlternativeAddress';
-
-// special settings.
-//\$config['MEMCACHED_ENABLED'] = 1;
-\$config['SPHINX_STRICT_SCHEMA'] = 1; // required for Sphinx see https://bitbucket.org/jsuto/piler/issues/1085/sphinx-331.
-EOF
+# Restore Config
+cp $installPth/backup/config-site.php.bak $etcPth/ && cp $installPth/backup/config-site.php $etcPth/
+cp $installPth/backup/piler.conf.bak $etcPth/ && cp $etcPth/piler.conf $etcPth/
+cp $installPth/backup/.my.cnf $etcPth/
 
 if [ "$USE_MAILCOW" = true ]; then
 
@@ -285,23 +247,7 @@ include('auth-mailcow.php');
 EOF
 
 curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
-fi
-
-# add config settings
-
-if [ ! -f $etcPth/piler.conf.bak ]; then
-  cp $etcPth/piler.conf $etcPth/piler.conf.bak
-else
-  rm $etcPth/piler.conf
-  cp $etcPth/piler.conf.bak $etcPth/piler.conf
-fi
-
-sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
-sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" $etcPth/piler.conf
-
-cat >> $etcPth/piler.conf <<EOF
-queuedir=/var/piler/store
-EOF
+fi‚
 
 # piler restart
 echo

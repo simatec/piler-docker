@@ -100,6 +100,7 @@ fi
 installPth=`pwd`
 configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+buildPth="$installPth/build"
 
 ############################## Installer Settings ######################################
 
@@ -273,6 +274,9 @@ done
 if [ ! -f $installPth/.env ]; then
     ln -s ./piler.conf .env
 fi
+
+# Build Piler
+bash $buildPth/build.sh
 
 if [ -f $installPth/docker-compose.yml ]; then
     rm $installPth/docker-compose.yml

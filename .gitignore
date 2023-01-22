@@ -1,0 +1,5 @@
+.git
+test.sh
+.vscode
+.DS_Store
+/build/test_build.conf

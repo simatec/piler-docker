@@ -62,3 +62,13 @@ MAILCOW_APIKEY="your_Mailcow_API-Key"
 # your Mailcow Host Domain
 
 MAILCOW_HOST="mail.example.com"
+
+# ------ Container Versions --------
+
+# Piler Version
+
+PILER_VERSION="1.4.3"
+
+# MariaDB Version
+
+MARIADB_VERSION="10.6"

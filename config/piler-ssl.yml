@@ -23,7 +23,7 @@ services:
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
   mysql:
-    image: mariadb:10.6
+    image: mariadb:${MARIADB_VERSION}
     container_name: mysql-piler
     restart: unless-stopped
     cap_drop:
@@ -57,7 +57,7 @@ services:
     command: -m 64
 
   piler:
-    image: sutoj/piler:1.4.2
+    image: simatec/piler:${PILER_VERSION}
     container_name: piler
     restart: unless-stopped
     expose:
