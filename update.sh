@@ -248,7 +248,7 @@ include('auth-mailcow.php');
 EOF
 
 curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
-fi‚
+fi
 
 # piler restart
 echo
