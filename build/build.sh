@@ -15,13 +15,13 @@ chmod a+x start.sh
 sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ../piler.conf
 
 # set Maria-DB Version
-sed -i 's/MARIADB_VERSION=.*/MARIADB_VERSION="'$MARIADB_VERSION'"/g' ../piler.conf
-MARIADB_VERSION
+sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ../piler.conf
+
 
 # Package Download
 rm -f $buildPth/*.deb
 
-curl -o $buildPth/$PILER_PACKAGE https://bitbucket.org/jsuto/piler/downloads/$PILER_PACKAGE
+curl -OL https://bitbucket.org/jsuto/piler/downloads/$PILER_PACKAGE
 
 set -o errexit
 set -o pipefail

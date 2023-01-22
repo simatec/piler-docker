@@ -183,7 +183,8 @@ if [ ! -f $etcPth/MANTICORE ]; then
 fi
 
 # Build Piler
-bash $buildPth/build.sh
+cd $buildPth
+bash build.sh
 
 # Copy docker-compose.yml
 if [ "$USE_LETSENCRYPT" = "yes" ]; then

@@ -2,7 +2,7 @@ version: "3"
 services:
 
   mysql:
-    image: mariadb:${MARIADB_VERSION}
+    image: mariadb:${MARIA_DB_VERSION}
     container_name: mysql_piler
     restart: unless-stopped
     cap_drop:

@@ -23,7 +23,7 @@ services:
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
   mysql:
-    image: mariadb:${MARIADB_VERSION}
+    image: mariadb:${MARIA_DB_VERSION}
     container_name: mysql-piler
     restart: unless-stopped
     cap_drop:

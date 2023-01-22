@@ -276,7 +276,8 @@ if [ ! -f $installPth/.env ]; then
 fi
 
 # Build Piler
-bash $buildPth/build.sh
+cd $buildPth
+bash build.sh
 
 if [ -f $installPth/docker-compose.yml ]; then
     rm $installPth/docker-compose.yml
