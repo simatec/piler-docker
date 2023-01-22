@@ -15,12 +15,13 @@ else
   	green=`echo -e "\e[1m\e[32m"`
   	greenBold=`echo -e "\e[1m\e[1;32m"`
 	redBold=`echo -e "\e[1m\e[1;31m"`
-	puple=`echo -e "\e[1m\e[35m"`
+	purple=`echo -e "\e[1m\e[35m"`
 	bold=`echo -e "\e[1m"`
   	normal=`echo -en "\e[0m"`
 fi
 
-HLINE="=================================================================="
+HLINE="================================================================"
+HLINE_SMALL="================================="
 
 BLA_metro=( 0.2 '    ' '=   ' '==  ' '=== ' ' ===' '  ==' '   =' )
 
@@ -49,11 +50,224 @@ BLA::stop_loading_animation() {
 }
 
 #######################################################################################
-installPth="/opt/piler-docker"
-configPth="/opt/piler-docker/config"
+
+echo
+echo "${greenBold}${HLINE_SMALL}"
+echo "Welcome to Piler-Docker Installer"
+echo "${greenBold}${HLINE_SMALL}${normal}"
+echo
+
+#######################################################################################
+
+# App Check
+for bin in curl docker git; do
+  if [[ -z $(which ${bin}) ]]; then echo "${redBold}Cannot find ${bin}, exiting...${normal}"; exit 1; fi
+done
+
+# Docker-Compose Check
+if docker compose > /dev/null 2>&1; then
+    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=native
+      echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
+      sleep 2
+      echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
+    else
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+elif docker-compose > /dev/null 2>&1; then
+  if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
+    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=standalone
+      echo -e "${purple}Found Docker Compose Standalone.${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
+      sleep 2
+    else
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+  fi
+
+else
+  echo -e "${redBold}Cannot find Docker Compose.${normal}"
+  exit 1
+fi
+
+#######################################################################################
+
+# Path-Settings
+installPth=`pwd`
+configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
-# Load config
+############################## Installer Settings ######################################
+
+if [ ! -f $installPth/.configDone ]; then
+
+    # create config
+    if [ ! -f $installPth/piler.conf ]; then
+        if [ -f $installPth/piler.conf.example ]; then
+            cp $installPth/piler.conf.example $installPth/piler.conf
+        fi
+    fi
+
+    # Load config
+    . ./piler.conf
+
+    # Piler-Domain
+    read -ep "Please set your Piler-Domain (Enter for default: $PILER_DOMAIN): " pilerDomain
+    pilerDomain=${pilerDomain:=$PILER_DOMAIN}
+    sed -i 's/PILER_DOMAIN=.*/PILER_DOMAIN="'$pilerDomain'"/g' ./piler.conf
+
+    # Piler-Admin-Mail
+    read -ep "Please set your Mailserver Admin Mail (Enter for default: $SUPPORT_MAIL): " pilerAdminMail
+    pilerAdminMail=${pilerAdminMail:=$SUPPORT_MAIL}
+    sed -i 's/SUPPORT_MAIL=.*/SUPPORT_MAIL="'$pilerAdminMail'"/g' ./piler.conf
+
+    # retention Days
+    read -ep "Please set retention days (Enter for default: $DEFAULT_RETENTION_DAYS Days): " retentionDays
+    retentionDays=${retentionDays:=$DEFAULT_RETENTION_DAYS}
+    sed -i 's/DEFAULT_RETENTION_DAYS=.*/DEFAULT_RETENTION_DAYS="'$retentionDays'"/g' ./piler.conf
+
+    # Smarthost
+    read -ep "Please set your Smarthost (Enter for default: $SMARTHOST). Default settings can be used here!!: " pilerSmartHost
+    pilerSmartHost=${pilerSmartHost:=$SMARTHOST}
+    sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
+
+    # IMAP Server
+    read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+    imapServer=${imapServer:=$IMAP_SERVER}
+    sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+
+    # Timezone
+    read -ep "Please set your Timezone (Enter for default: $TIME_ZONE): " timeZone
+    timeZone=${timeZone:=$TIME_ZONE}
+    timeZone="${timeZone////\\/}"
+    sed -i 's/TIME_ZONE=.*/TIME_ZONE="'$timeZone'"/g' ./piler.conf
+
+    # MySql Database
+    read -ep "Please set your MySql Database (Enter for default: $MYSQL_DATABASE): " pilerDataBase
+    pilerDataBase=${pilerDataBase:=$MYSQL_DATABASE}
+    sed -i 's/MYSQL_DATABASE=.*/MYSQL_DATABASE="'$pilerDataBase'"/g' ./piler.conf
+
+    # MySql User
+    read -ep "Please set your MySql User (Enter for default: $MYSQL_USER): " pilerUser
+    pilerUser=${pilerUser:=$MYSQL_USER}
+    sed -i 's/MYSQL_USER=.*/MYSQL_USER="'$pilerUser'"/g' ./piler.conf
+
+    # MySql Password
+    read -sp "Please set your MySql Password: " pilerPassword
+    pilerPassword=$pilerPassword
+    sed -i 's/MYSQL_PASSWORD=.*/MYSQL_PASSWORD="'$pilerPassword'"/g' ./piler.conf
+    echo
+
+    # use Let's Encrypt
+    while true; do
+        read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
+            [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+        esac
+    done
+
+    # reload config
+    . ./piler.conf
+
+    # Let's Encrypt registration contact information
+    if [ "$USE_LETSENCRYPT" = "yes" ]; then
+        read -ep "Please set Let's Encrypt registration contact information (Enter for default: $LETSENCRYPT_EMAIL): " acmeContact
+        acmeContact=${acmeContact:=$LETSENCRYPT_EMAIL}
+        sed -i 's/LETSENCRYPT_EMAIL=.*/LETSENCRYPT_EMAIL="'$acmeContact'"/g' ./piler.conf
+    fi
+
+    # use Mailcow
+    while true; do
+        read -ep "If Use Mailcow API Options (yes/no)? / Y|N: " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
+            [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+        esac
+    done
+
+    # reload config
+    . ./piler.conf
+
+    if [ "$USE_MAILCOW" = true ]; then
+        # Mailcow API-Key
+        read -ep "Please set your Mailcow API-Key (current: $MAILCOW_APIKEY): " apiKey
+        apiKey=${apiKey:=$MAILCOW_APIKEY}
+        sed -i 's/MAILCOW_APIKEY=.*/MAILCOW_APIKEY="'$apiKey'"/g' ./piler.conf
+
+        # Mailcow Host Domain
+        read -ep "Please set your Mailcow Host Domain (Enter for default: $imapServer): " mailcowHost
+        mailcowHost=${mailcowHost:=$imapServer}
+        sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
+    fi
+
+    echo
+    echo "${blue}${HLINE}"
+    echo "All settings were saved in the piler.conf file"
+    echo "and can be adjusted there at any time."
+    echo "${blue}${HLINE}${normal}"
+    echo
+
+    # config done
+    touch $installPth/.configDone
+
+elif [ -f $installPth/.configDone ]; then
+    # Load config
+    . ./piler.conf
+
+    select name in Install-Piler Update-Piler
+    do
+        if [ $name = "Install-Piler" ]; then
+            echo
+            echo "${blue}Ready for: $name${normal}" && break
+            echo
+        elif [ $name = "Update-Piler" ]; then
+            echo
+            echo "${blue}Ready for: $name${normal}"
+            echo
+
+            for fileUpdate in update.sh README.md; do
+                echo "${purple}${HLINE}${HLINE_SMALL}"
+                echo "${purple}****** Download Update $fileUpdate ******"
+                curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
+                echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+                echo
+            done
+
+            bash $installPth/update.sh && exit 1
+        fi
+    done
+fi
+
+# uninstall Postfix
+while true; do
+    read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
+    case $yn in
+        [Yy]* ) apt purge postfix -y; break;;
+        [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
+        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
+    esac
+done
+
+# start piler install
+while true; do
+    read -ep "Do you want to start the Piler installation now? / Y|N: " yn
+    case $yn in
+        [Yy]* ) echo -e "${greenBold}Piler install started!! ${normal}"; break;;
+        [Nn]* ) echo -e "${redBold}Aborting the Piler installation!! ${normal}"; exit;;
+        * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+    esac
+done
+
+#########################################################################################
+
+# reload config
 . ./piler.conf
 
 if [ ! -f $installPth/.env ]; then
@@ -70,18 +284,14 @@ else
     cp $configPth/piler-default.yml $installPth/docker-compose.yml
 fi
 
-while true; do
-    read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
-    case $yn in
-        [Yy]* ) apt purge postfix -y; break;;
-        [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
-        * ) echo -e "${red} Please confirm with y or n.";;
-    esac
-done
-
 # old docker stop
 cd $installPth
-docker-compose down
+
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose down
+else
+    docker-compose down
+fi
 
 # docker start
 echo
@@ -104,7 +314,12 @@ if [ "$USE_LETSENCRYPT" = "yes" ]; then
     fi
 fi
 
-docker-compose up -d
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose up -d
+else
+    docker-compose up -d
+fi
+
 
 echo "${blue}********* Piler started... Please wait... *********"
 
@@ -237,7 +452,13 @@ echo "${blue}${HLINE}${normal}"
 echo
 
 cd $installPth
-docker-compose restart piler
+
+if [ $COMPOSE_VERSION = native ]; then
+    docker compose restart piler
+else
+    docker-compose restart piler
+fi
+
 
 echo
 echo "${greenBold}${HLINE}"
@@ -245,12 +466,12 @@ echo "${greenBold}             Piler install completed successfully"
 echo "${greenBold}${HLINE}${normal}"
 echo
 echo
-echo "${greenBold}${HLINE}"
+echo "${greenBold}${HLINE}${HLINE_SMALL}"
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
 else
     echo "${greenBold}you can start in your Browser with:"
     echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
 fi
-echo "${greenBold}${HLINE}${normal}"
+echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
 echo

@@ -20,7 +20,8 @@ else
   normal=`echo -en "\e[0m"`
 fi
 
-HLINE="=================================================================="
+HLINE="================================================================"
+HLINE_SMALL="================================="
 
 BLA_metro=( 0.2 '    ' '=   ' '==  ' '=== ' ' ===' '  ==' '   =' )
 
@@ -50,28 +51,73 @@ BLA::stop_loading_animation() {
 
 #######################################################################################
 
+echo
+echo "${greenBold}${HLINE_SMALL}"
+echo "Welcome to Piler-Docker Updater"
+echo "${greenBold}${HLINE_SMALL}${normal}"
+echo
+
+#######################################################################################
+
+# App Check
+for bin in curl docker git; do
+  if [[ -z $(which ${bin}) ]]; then echo "${redBold}Cannot find ${bin}, exiting...${normal}"; exit 1; fi
+done
+
+# Docker-Compose Check
+if docker compose > /dev/null 2>&1; then
+    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=native
+      echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
+      sleep 2
+      echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
+    else
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+elif docker-compose > /dev/null 2>&1; then
+  if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
+    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+      COMPOSE_VERSION=standalone
+      echo -e "${purple}Found Docker Compose Standalone.${normal}"
+      echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
+      sleep 2
+    else
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      exit 1
+    fi
+  fi
+
+else
+  echo -e "${redBold}Cannot find Docker Compose.${normal}"
+  exit 1
+fi
+
+#######################################################################################
+
 while true; do
     read -ep "Do you want to perform the update?? (y/n): " yn
     case $yn in
         [Yy]* ) echo "${greenBold}********* Update started... Please wait... *********${normal}"; break;;
         [Nn]* ) echo -e "${redBold}    The update is canceled!${normal}"; exit;;
-        * ) echo -e "${red} Please confirm with y or n.";;
+        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
     esac
 done
 
-installPth="/opt/piler-docker"
-configPth="/opt/piler-docker/config"
+installPth=`pwd`
+configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
 # config load
 . ./piler.conf
 
 if [ ! -f $installPth/.env ]; then
-    ln -s ./piler.conf .env
+  ln -s ./piler.conf .env
 fi
 
 if [ -f $installPth/docker-compose.yml ]; then
-    rm $installPth/docker-compose.yml
+  rm $installPth/docker-compose.yml
 fi
 
 # Download yml update
@@ -81,27 +127,38 @@ echo "${greenBold}                 Download Update files for Piler"
 echo "${greenBold}${HLINE}${normal}"
 echo
 
-#cd $configPth
+# Update Files
+for ymlUpdate in piler-default.yml piler-ssl.yml; do
+  echo
+  echo "${purple}${HLINE}${HLINE_SMALL}"
+  echo "${purple}****** Download Update $ymlUpdate ******"
+  curl -o $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
+  echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+  echo
+done
 
-# Update yml
-echo
-echo "${purple}${HLINE}"
-echo "${purple}****** Download Update files piler-default.yml ******"
-curl -o $configPth/piler-default.yml https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-default.yml
-echo "${purple}****** Download Update files piler-ssl.yml ******"
-curl -o $configPth/piler-ssl.yml https://raw.githubusercontent.com/simatec/piler-docker/main/config/piler-ssl.yml
-echo "${purple}${HLINE}${normal}"
-echo
+for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
+  echo
+  echo "${purple}${HLINE}${HLINE_SMALL}"
+  echo "${purple}****** Download Update $fileUpdate ******"
+  curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
+  echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+  echo
+done
 
 # old docker stop
 cd $installPth
 
-docker-compose down
+if [ $COMPOSE_VERSION = native ]; then
+  docker compose down
+else
+  docker-compose down
+fi
 
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
+  cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
 else
-    cp $configPth/piler-default.yml $installPth/docker-compose.yml
+  cp $configPth/piler-default.yml $installPth/docker-compose.yml
 fi
 
 # start Update Container
@@ -113,17 +170,21 @@ echo
 
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
     if ! docker network ls | grep -o "nginx-proxy"; then
-        docker network create nginx-proxy
+      docker network create nginx-proxy
 
-        echo
-        echo "${blue}${HLINE}"
-        echo "${blue}                       docker network created"
-        echo "${blue}${HLINE}${normal}"
-        echo
+      echo
+      echo "${blue}${HLINE}"
+      echo "${blue}                       docker network created"
+      echo "${blue}${HLINE}${normal}"
+      echo
     fi
 fi
 
-docker-compose up --force-recreate --build -d
+if [ $COMPOSE_VERSION = native ]; then
+  docker compose up --force-recreate --build -d
+else
+  docker-compose up --force-recreate --build -d
+fi
 
 echo "${blue}********* Piler started... Please wait... *********${normal}"
 
@@ -132,10 +193,10 @@ sleep 20
 BLA::stop_loading_animation
 
 if [ ! -f $etcPth/config-site.php.bak ]; then
-    cp $etcPth/config-site.php $etcPth/config-site.php.bak
+  cp $etcPth/config-site.php $etcPth/config-site.php.bak
 else
-    rm $etcPth/config-site.php
-    cp $etcPth/config-site.php.bak $etcPth/config-site.php
+  rm $etcPth/config-site.php
+  cp $etcPth/config-site.php.bak $etcPth/config-site.php
 fi
 
 echo
@@ -229,10 +290,10 @@ fi
 # add config settings
 
 if [ ! -f $etcPth/piler.conf.bak ]; then
-    cp $etcPth/piler.conf $etcPth/piler.conf.bak
+  cp $etcPth/piler.conf $etcPth/piler.conf.bak
 else
-    rm $etcPth/piler.conf
-    cp $etcPth/piler.conf.bak $etcPth/piler.conf
+  rm $etcPth/piler.conf
+  cp $etcPth/piler.conf.bak $etcPth/piler.conf
 fi
 
 sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
@@ -250,7 +311,12 @@ echo "${blue}${HLINE}${normal}"
 echo
 
 cd $installPth
-docker-compose restart piler
+
+if [ $COMPOSE_VERSION = native ]; then
+  docker compose restart piler
+else
+  docker-compose restart piler
+fi
 
 echo
 echo "${greenBold}${HLINE}"
@@ -258,14 +324,16 @@ echo "${greenBold}             Piler Update completed successfully"
 echo "${greenBold}${HLINE}${normal}"
 echo
 echo
-echo "${greenBold}${HLINE}"
+echo "${greenBold}${HLINE}${HLINE_SMALL}"
+
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
+  echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
 else
-    echo "${greenBold}you can start in your Browser with:"
-    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
+  echo "${greenBold}you can start in your Browser with:"
+  echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
 fi
-echo "${greenBold}${HLINE}${normal}"
+
+echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
 
 echo
 echo "${blue}${HLINE}"
