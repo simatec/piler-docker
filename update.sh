@@ -150,7 +150,7 @@ for buildUpdate in start.sh build.sh Dockerfile build.conf; do
 done
 
 # build config load
-. .$buildPth/build.conf
+. $buildPth/build.conf
 
 # set Piler Version
 sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ./piler.conf
