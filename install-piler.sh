@@ -277,7 +277,9 @@ fi
 
 # Build Piler
 cd $buildPth
-bash build.sh
+echo echo "${greenBold}Start Piler-Build...${normal}" && \
+bash build.sh && \
+echo "${greenBold}Piler-Build finish${normal}"
 
 if [ -f $installPth/docker-compose.yml ]; then
     rm $installPth/docker-compose.yml
