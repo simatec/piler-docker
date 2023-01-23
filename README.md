@@ -145,6 +145,10 @@ To leave the container on the console you have to execute 2x `exit`.
 
 ## Changelog
 
+### 0.9.1 (23.01.2023)
+* (simatec) Piler Docker Hub added
+* (simatec) Fix Automatic Import
+
 ### 0.9.0 (23.01.2023)
 * (simatec) Piler Build added
 * (simatec) Piler Import Option added

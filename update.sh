@@ -110,13 +110,6 @@ configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 buildPth="$installPth/build"
 
-# config load
-. ./piler.conf
-
-if [ ! -f $installPth/.env ]; then
-  ln -s ./piler.conf .env
-fi
-
 if [ -f $installPth/docker-compose.yml ]; then
   rm $installPth/docker-compose.yml
 fi
@@ -156,6 +149,22 @@ for buildUpdate in start.sh build.sh Dockerfile build.conf; do
   echo
 done
 
+# build config load
+. .$buildPth/build.conf
+
+# set Piler Version
+sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ./piler.conf
+
+# set Maria-DB Version
+sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ./piler.conf
+
+# config load
+. ./piler.conf
+
+if [ ! -f $installPth/.env ]; then
+  ln -s ./piler.conf .env
+fi
+
 # old docker stop
 cd $installPth
 
@@ -181,10 +190,10 @@ if [ ! -f $etcPth/MANTICORE ]; then
 fi
 
 # Build Piler
-cd $buildPth
-echo "${greenBold}Start Piler-Build...${normal}" && \
-bash build.sh && \
-echo "${greenBold}Piler-Build finish${normal}"
+#cd $buildPth
+#echo "${greenBold}Start Piler-Build...${normal}" && \
+#bash build.sh && \
+#echo "${greenBold}Piler-Build finish${normal}"
 
 # Copy docker-compose.yml
 if [ "$USE_LETSENCRYPT" = "yes" ]; then

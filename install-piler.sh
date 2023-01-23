@@ -287,10 +287,10 @@ if [ ! -f $installPth/.env ]; then
 fi
 
 # Build Piler
-cd $buildPth
-echo echo "${greenBold}Start Piler-Build...${normal}" && \
-bash build.sh && \
-echo "${greenBold}Piler-Build finish${normal}"
+#cd $buildPth
+#echo "${greenBold}Start Piler-Build...${normal}" && \
+#bash build.sh && \
+#echo "${greenBold}Piler-Build finish${normal}"
 
 if [ -f $installPth/docker-compose.yml ]; then
     rm $installPth/docker-compose.yml
@@ -428,6 +428,8 @@ cat >> $etcPth/config-site.php <<EOF
 EOF
 
 if [ "$AUTO_IMPORT" = true ]; then
+chown root:crontab $cronPth/piler
+
 cat >> $cronPth/piler <<EOF
 ### Piler import added by Piler-Installer
 */5 * * * * /usr/libexec/piler/import.sh
@@ -487,7 +489,6 @@ if [ $COMPOSE_VERSION = native ]; then
 else
     docker-compose restart piler
 fi
-
 
 echo
 echo "${greenBold}${HLINE}"

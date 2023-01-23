@@ -12,10 +12,10 @@ chmod a+x start.sh
 . ./build.conf
 
 # set Piler Version
-sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ../piler.conf
+#sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ../piler.conf
 
 # set Maria-DB Version
-sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ../piler.conf
+#sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ../piler.conf
 
 
 # Package Download
