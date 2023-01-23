@@ -100,6 +100,7 @@ fi
 installPth=`pwd`
 configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+cronPth="/var/lib/docker/volumes/piler-docker_piler_cron/_data"
 buildPth="$installPth/build"
 
 ############################## Installer Settings ######################################
@@ -207,6 +208,16 @@ if [ ! -f $installPth/.configDone ]; then
         mailcowHost=${mailcowHost:=$imapServer}
         sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
     fi
+
+    # Import Interval Settings 
+    while true; do
+        read -ep "If Use automatic import to 5 minutes interval (yes/no)? / Y|N (Default: no): " jn
+        case $jn in
+            [Yy]* ) AUTO_IMPORT=true; break;;
+            [Nn]* ) AUTO_IMPORT=false; break;;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+        esac
+    done
 
     echo
     echo "${blue}${HLINE}"
@@ -355,6 +366,7 @@ echo
 
 cat >> $etcPth/config-site.php <<EOF
 
+// ### Begin added by Piler-Installer ###
 // Smarthost
 \$config['SMARTHOST'] = '$SMARTHOST';
 \$config['SMARTHOST_PORT'] = '25';
@@ -412,7 +424,15 @@ cat >> $etcPth/config-site.php <<EOF
 // special settings.
 //\$config['MEMCACHED_ENABLED'] = 1;
 \$config['SPHINX_STRICT_SCHEMA'] = 1; // required for Sphinx see https://bitbucket.org/jsuto/piler/issues/1085/sphinx-331.
+// ### end added by Piler-Installer ###
 EOF
+
+if [ "$AUTO_IMPORT" = true ]; then
+cat >> $cronPth/piler <<EOF
+### Piler import added by Piler-Installer
+*/5 * * * * /usr/libexec/piler/import.sh
+EOF
+fi
 
 if [ "$USE_MAILCOW" = true ]; then
 
@@ -424,12 +444,14 @@ echo
 
 cat >> $etcPth/config-site.php <<EOF
 
+// ### Begin added by Piler-Installer ###
 // Mailcow API
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
 \$config['MAILCOW_SET_REALNAME'] = true;
 \$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
 \$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
 include('auth-mailcow.php');
+// ### end added by Piler-Installer ###
 EOF
 
 curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php

@@ -170,10 +170,7 @@ if [ ! -d $installPth/backup ]; then
   mkdir -p $installPth/backup
 fi
 
-#cp $etcPth/config-site.php.bak $installPth/backup/ && cp $etcPth/config-site.php $installPth/backup/
-#cp $etcPth/piler.conf.bak $installPth/backup/ && cp $etcPth/piler.conf $installPth/backup/
-#cp $etcPth/.my.cnf $installPth/backup/
-cp $etcPth/* $installPth/backup/
+cp -rf $etcPth/* $installPth/backup/
 
 # delete old files
 #rm -f $etcPth/piler.key $etcPth/piler.pem $etcPth/config-site.php
@@ -185,7 +182,7 @@ fi
 
 # Build Piler
 cd $buildPth
-echo echo "${greenBold}Start Piler-Build...${normal}" && \
+echo "${greenBold}Start Piler-Build...${normal}" && \
 bash build.sh && \
 echo "${greenBold}Piler-Build finish${normal}"
 
@@ -220,33 +217,6 @@ if [ $COMPOSE_VERSION = native ]; then
 else
   docker-compose up --force-recreate --build -d
 fi
-
-#echo "${blue}********* Piler started... Please wait... *********${normal}"
-
-#BLA::start_loading_animation "${BLA_metro[@]}"
-#sleep 20
-#BLA::stop_loading_animation
-
-# Restore Config
-#cp $installPth/backup/config-site.php.bak $etcPth/ && cp $installPth/backup/config-site.php $etcPth/
-#cp $installPth/backup/piler.conf.bak $etcPth/ && cp $installPth/backup/piler.conf $etcPth/
-#cp $installPth/backup/.my.cnf $etcPth/
-#cp $installPth/backup/* $etcPth/
-
-# piler restart
-#echo
-#echo "${blue}${HLINE}"
-#echo "${blue}                  restart piler ..."
-#echo "${blue}${HLINE}${normal}"
-#echo
-
-#cd $installPth
-
-#if [ $COMPOSE_VERSION = native ]; then
-#  docker compose restart piler
-#else
-#  docker-compose restart piler
-#fi
 
 echo
 echo "${greenBold}${HLINE}"
