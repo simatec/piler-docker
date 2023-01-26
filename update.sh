@@ -126,7 +126,8 @@ for ymlUpdate in piler-default.yml piler-ssl.yml; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $ymlUpdate ******"
-  curl -o $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
+  #curl -o $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
+  wget https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate -O $configPth/$ymlUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done
@@ -135,7 +136,8 @@ for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $fileUpdate ******"
-  curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
+  #curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
+  wget https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate -O $installPth/$fileUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done
@@ -144,7 +146,8 @@ for buildUpdate in start.sh build.sh Dockerfile build.conf; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $buildUpdate ******"
-  curl -o $buildPth/$buildUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate
+  #curl -o $buildPth/$buildUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate
+  wget https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate -O $buildPth/$buildUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done

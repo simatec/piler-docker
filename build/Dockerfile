@@ -33,15 +33,20 @@ RUN apt-get update && \
     rm -f ${PACKAGE} /etc/nginx/sites-enabled/default /etc/piler/piler.key /etc/piler/piler.pem /etc/piler/config-site.php && \
     crontab -u $PILER_USER /usr/share/piler/piler.cron
 
-VOLUME ["/etc/piler"]
-VOLUME ["/var/piler/store"]
-VOLUME ["/var/piler/manticore"]
-VOLUME ["/var/piler/imap"]
-VOLUME ["/var/piler/stat"]
-VOLUME ["/var/spool/cron/crontabs"]
+VOLUME ["/etc/piler","/var/piler/store","/var/piler/manticore","/var/piler/imap","/var/piler/stat","/var/spool/cron/crontabs"]
 
-EXPOSE 25 80 443
+EXPOSE 25/tcp
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+
+# Clean up APT when done.
+RUN apt clean && \
+    apt autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY start.sh /start.sh
+
+# chmod start.sh
+RUN chmod a+x /start.sh
 
 CMD ["/start.sh"]

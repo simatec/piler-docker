@@ -21,7 +21,8 @@ chmod a+x start.sh
 # Package Download
 rm -f $buildPth/*.deb
 
-curl -OL https://bitbucket.org/jsuto/piler/downloads/$PILER_PACKAGE
+#curl -OL https://bitbucket.org/jsuto/piler/downloads/$PILER_PACKAGE
+wget https://bitbucket.org/jsuto/piler/downloads/$PILER_PACKAGE -O $PILER_PACKAGE
 
 set -o errexit
 set -o pipefail
