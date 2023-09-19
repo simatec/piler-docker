@@ -67,7 +67,7 @@ MAILCOW_HOST="mail.example.com"
 
 # Piler Version
 
-PILER_VERSION="1.4.3"
+PILER_VERSION="1.4.4"
 
 # MariaDB Version
 
