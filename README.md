@@ -86,6 +86,8 @@ If you have Let's Encrypt activated, you can reach the Piler at https://your-pil
 
 If Let's Encrypt is disabled, the Piler is at http://your-piler-domain or at http://your-local-IP
 
+The Default Login is `admin@local` and the Password ist `pilerrocks`
+
 
 > After installation, any changes can be made in piler.conf at any time and the install script can then be run again.
 
