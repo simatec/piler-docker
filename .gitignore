@@ -1,5 +1,4 @@
 .git
 .vscode
 .DS_Store
-/build/test_build.conf
 piler.conf
