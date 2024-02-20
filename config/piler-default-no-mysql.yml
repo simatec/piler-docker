@@ -1,32 +1,5 @@
 version: "3"
 services:
-
-  mysql:
-    image: mariadb:${MARIA_DB_VERSION}
-    container_name: mysql_piler
-    restart: unless-stopped
-    cap_drop:
-      - ALL
-    cap_add:
-      - dac_override
-      - setuid
-      - setgid
-    environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-      - TZ="Europe/Berlin"
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    healthcheck:
-      test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
-      interval: "60s"
-      timeout: "5s"
-      start_period: "15s"
-      retries: 3
-    volumes:
-      - db_data:/var/lib/mysql
-
   memcached:
     image: memcached:latest
     container_name: memcached_piler
@@ -76,10 +49,8 @@ services:
 
     depends_on:
       - "memcached"
-      - "mysql"
 
 volumes:
-  db_data:
   piler_etc:
   piler_var_store:
   piler_var_manticore:
