@@ -178,6 +178,21 @@ if [ ! -f $installPth/.configDone ]; then
     sed -i 's/MYSQL_PASSWORD=.*/MYSQL_PASSWORD="'$pilerPassword'"/g' ./piler.conf
     echo
 
+    # SMTP Port
+    read -ep "Please set your SMTP Port (Enter for default: $SMTP_PORT): " pilerSmtpPort
+    pilerSmtpPort=${pilerSmtpPort:=$SMTP_PORT}
+    sed -i 's/SMTP_PORT=.*/SMTP_PORT="'$pilerSmtpPort'"/g' ./piler.conf
+
+    # HTTP Port
+    read -ep "Please set your HTTP Port (Enter for default: $HTTP_PORT): " pilerHttpPort
+    pilerHttpPort=${pilerHttpPort:=$HTTP_PORT}
+    sed -i 's/HTTP_PORT=.*/HTTP_PORT="'$pilerHttpPort'"/g' ./piler.conf
+
+    # HTTPS Port
+    read -ep "Please set your HTTPS Port (Enter for default: $HTTPS_PORT): " pilerHttpsPort
+    pilerHttpsPort=${pilerHttpsPort:=$HTTPS_PORT}
+    sed -i 's/HTTPS_PORT=.*/HTTPS_PORT="'$pilerHttpsPort'"/g' ./piler.conf
+
     # use Let's Encrypt
     while true; do
         read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
@@ -272,15 +287,18 @@ elif [ -f $installPth/.configDone ]; then
     done
 fi
 
-# uninstall Postfix
-while true; do
-    read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
-    case $yn in
-        [Yy]* ) apt purge postfix -y; break;;
-        [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
-        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
-    esac
-done
+# uninstall Postfix, if SMTP_PORT is 25
+if [[ "${SMTP_PORT}" -eq 25 ]]
+then
+    while true; do
+        read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
+        case $yn in
+            [Yy]* ) apt purge postfix -y; break;;
+            [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
+            * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
+        esac
+    done
+fi
 
 # start piler install
 while true; do

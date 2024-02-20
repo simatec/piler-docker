@@ -23,9 +23,9 @@ services:
       - MEMCACHED_HOST=memcached
       - TZ=${TIME_ZONE}
     ports:
-      - "25:25"
-      - "80:80"
-      - "443:443"
+      - "${SMTP_PORT}:25"
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
     volumes:
       - piler_etc:/etc/piler
       - piler_var_store:/var/piler/store
