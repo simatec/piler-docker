@@ -75,7 +75,6 @@ services:
 
     depends_on:
       - "memcached"
-      - "mysql"
 
 networks:
   default:

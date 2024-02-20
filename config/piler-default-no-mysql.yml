@@ -49,7 +49,6 @@ services:
 
     depends_on:
       - "memcached"
-      - "mysql"
 
 volumes:
   piler_etc:
