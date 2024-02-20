@@ -30,6 +30,10 @@ SMARTHOST="127.0.0.1"
 
 MYSQL_DATABASE="piler"
 
+# MySql Hostname
+
+MYSQL_DATABASE="mysql"
+
 # MySql User
 
 MYSQL_USER="piler"

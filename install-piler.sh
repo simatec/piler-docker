@@ -148,6 +148,20 @@ if [ ! -f $installPth/.configDone ]; then
     timeZone="${timeZone////\\/}"
     sed -i 's/TIME_ZONE=.*/TIME_ZONE="'$timeZone'"/g' ./piler.conf
 
+    # MySql Hostname
+    read -ep "Please set your MySql Hostname (Enter for default: $MYSQL_HOSTNAME): " pilerDatabaseHostname
+    pilerDatabaseHostname=${pilerDatabaseHostname:=$MYSQL_HOSTNAME}
+    sed -i 's/MYSQL_HOSTNAME=.*/MYSQL_HOSTNAME="'$pilerDatabaseHostname'"/g' ./piler.conf
+    # Check if external database is used
+    if [[ ! "${pilerDatabaseHostname}" == "mysql" ]]
+    then
+        # User Info
+        printf "\n"
+        echo "You are using an external database."
+        echo "Be sure that the database exists and username/password are correct."
+        printf "\n"
+    fi
+
     # MySql Database
     read -ep "Please set your MySql Database (Enter for default: $MYSQL_DATABASE): " pilerDataBase
     pilerDataBase=${pilerDataBase:=$MYSQL_DATABASE}
