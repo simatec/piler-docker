@@ -137,7 +137,7 @@ if [ ! -f $installPth/.configDone ]; then
     # Docker Volumes Path
     read -ep "Please set your Docker Volumes Path (Enter for default: $DOCKER_VOLUMES_PATH): " pilerDockerVolumesPath
     pilerDockerVolumesPath=${pilerDockerVolumesPath:=$DOCKER_VOLUMES_PATH}
-    sed -i 's/DOCKER_VOLUMES_PATH=.*/DOCKER_VOLUMES_PATH="'$pilerDockerVolumesPath'"/g' ./piler.conf
+    sed -i 's#DOCKER_VOLUMES_PATH=.*#DOCKER_VOLUMES_PATH=\"'$pilerDockerVolumesPath'\"#g' ./piler.conf
 
     # IMAP Server
     read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
