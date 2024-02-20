@@ -105,9 +105,12 @@ while true; do
     esac
 done
 
+# config load
+. ./piler.conf
+
 installPth=`pwd`
 configPth="$installPth/config"
-etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+etcPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_etc/_data"
 buildPth="$installPth/build"
 
 if [ -f $installPth/docker-compose.yml ]; then

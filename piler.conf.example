@@ -24,6 +24,10 @@ TIME_ZONE="Europe/Berlin"
 
 SMARTHOST="127.0.0.1"
 
+# Docker Volumes Path
+
+DOCKER_VOLUMES_PATH="/var/lib/docker/volumes"
+
 # ------------ MySql Settings -------------
 
 # MySql Database

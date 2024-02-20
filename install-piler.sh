@@ -94,13 +94,10 @@ else
   exit 1
 fi
 
-#######################################################################################
+################################ Path-Settings #########################################
 
-# Path-Settings
 installPth=`pwd`
 configPth="$installPth/config"
-etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
-cronPth="/var/lib/docker/volumes/piler-docker_piler_cron/_data"
 buildPth="$installPth/build"
 
 ############################## Installer Settings ######################################
@@ -136,6 +133,11 @@ if [ ! -f $installPth/.configDone ]; then
     read -ep "Please set your Smarthost (Enter for default: $SMARTHOST). Default settings can be used here!!: " pilerSmartHost
     pilerSmartHost=${pilerSmartHost:=$SMARTHOST}
     sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
+
+    # Docker Volumes Path
+    read -ep "Please set your Docker Volumes Path (Enter for default: $DOCKER_VOLUMES_PATH): " pilerDockerVolumesPath
+    pilerDockerVolumesPath=${pilerDockerVolumesPath:=$DOCKER_VOLUMES_PATH}
+    sed -i 's/DOCKER_VOLUMES_PATH=.*/DOCKER_VOLUMES_PATH="'$pilerDockerVolumesPath'"/g' ./piler.conf
 
     # IMAP Server
     read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
@@ -309,6 +311,11 @@ while true; do
         * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
     esac
 done
+
+################################ Path-Settings #########################################
+
+etcPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_etc/_data"
+cronPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_cron/_data"
 
 #########################################################################################
 
