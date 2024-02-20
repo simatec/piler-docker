@@ -122,7 +122,7 @@ echo "${greenBold}${HLINE}${normal}"
 echo
 
 # Update Files
-for ymlUpdate in piler-default.yml piler-ssl.yml; do
+for ymlUpdate in piler-default.yml piler-default-no-mysql.yml piler-ssl.yml piler-ssl-no-mysql.yml; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $ymlUpdate ******"
@@ -199,10 +199,18 @@ fi
 #echo "${greenBold}Piler-Build finish${normal}"
 
 # Copy docker-compose.yml
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-  cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
-else
-  cp $configPth/piler-default.yml $installPth/docker-compose.yml
+if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-ssl.yml" "${installPth}/docker-compose.yml"
+elif [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-ssl-no-mysql.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-default.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-default-no-mysql.yml" "${installPth}/docker-compose.yml"
 fi
 
 # start Update Container
