@@ -13,6 +13,8 @@ PILER_NGINX_CONF="${CONFIG_DIR}/piler-nginx.conf"
 SPHINX_CONF="${CONFIG_DIR}/manticore.conf"
 CONFIG_SITE_PHP="${CONFIG_DIR}/config-site.php"
 PILER_MY_CNF="${CONFIG_DIR}/.my.cnf"
+RT="${RT:-0}"
+MEMCACHED_HOSTNAME="${MEMCACHED_HOSTNAME:-memcached}"
 
 
 error() {
@@ -117,7 +119,7 @@ fix_configs() {
          echo "\$config['DB_USERNAME'] = '$MYSQL_USER';"
          echo "\$config['DB_PASSWORD'] = '$MYSQL_PASSWORD';"
          echo "\$config['ENABLE_MEMCACHED'] = 1;"
-         echo "\$memcached_server = ['memcached', 11211];"
+         echo "\$memcached_server = ['$MEMCACHED_HOSTNAME', 11211];"
       } >> "$CONFIG_SITE_PHP"
    fi
 
@@ -126,6 +128,21 @@ fix_configs() {
        -e "s%MYSQL_USERNAME%${MYSQL_USER}%" \
        -e "s%MYSQL_PASSWORD%${MYSQL_PASSWORD}%" \
        -i "$SPHINX_CONF"
+
+   # Fixes for RT index
+
+   if [[ $RT -eq 1 ]]; then
+      sed -i "s/define('RT', 0)/define('RT', 1)/" "$SPHINX_CONF"
+      if ! grep "'RT'" "$CONFIG_SITE_PHP"; then
+         echo "\$config['RT'] = 1;" >> "$CONFIG_SITE_PHP"
+      fi
+
+      if ! grep "'SPHINX_MAIN_INDEX'" "$CONFIG_SITE_PHP"; then
+         echo "\$config['SPHINX_MAIN_INDEX'] = 'piler1';" >> "$CONFIG_SITE_PHP"
+      fi
+
+      sed -i "s%rtindex=.*%rtindex=1%" "$PILER_CONF"
+   fi
 }
 
 
@@ -171,13 +188,14 @@ create_my_cnf_files() {
 
 start_services() {
    service cron start
-   service php8.1-fpm start
+   service php8.3-fpm start
    service nginx start
+   rsyslogd
 }
 
 
 start_piler() {
-   if [[ ! -f "${VOLUME_DIR}/manticore/main1.spp" ]]; then
+   if [[ $RT -eq 0 && ! -f "${VOLUME_DIR}/manticore/main1.spp" ]]; then
       log "main1.spp does not exist, creating index files"
       su -c "indexer --all --config ${SPHINX_CONF}" "$PILER_USER"
    fi
