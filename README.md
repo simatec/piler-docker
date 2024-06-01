@@ -19,7 +19,7 @@ This is a project to get the Mailpiler running in a docker compose system in a s
 
 You can find more information about the Piler project here.
 
-https://www.mailpiler.org/
+https://www.mailpiler.org/ or https://github.com/jsuto/piler
 
 *******************************************************************************************************
 
