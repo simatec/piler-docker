@@ -33,7 +33,8 @@ RUN apt-get update && \
     ln -sf /etc/piler/piler-nginx.conf /etc/nginx/sites-enabled && \
     echo "www-data ALL=NOPASSWD: /etc/init.d/rc.piler reload" > /etc/sudoers.d/piler && \
     rm -f ${PACKAGE}_${TARGETARCH}.deb /etc/nginx/sites-enabled/default /etc/piler/piler.key /etc/piler/piler.pem /etc/piler/config-site.php && \
-    crontab -u $PILER_USER /usr/share/piler/piler.cron
+    crontab -u $PILER_USER /usr/share/piler/piler.cron \
+    sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 
 VOLUME ["/etc/piler","/var/piler/store","/var/piler/manticore","/var/piler/imap","/var/piler/stat","/var/spool/cron/crontabs"]
 
@@ -44,8 +45,7 @@ EXPOSE 443/tcp
 # Clean up APT when done.
 RUN apt clean && \
     apt autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY start.sh /start.sh
 
