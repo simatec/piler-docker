@@ -44,7 +44,8 @@ EXPOSE 443/tcp
 # Clean up APT when done.
 RUN apt clean && \
     apt autoremove && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    sed -i '/imklog/s/^/#/' /etc/rsyslog.conf
 
 COPY start.sh /start.sh
 
