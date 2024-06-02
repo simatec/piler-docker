@@ -14,8 +14,6 @@ SPHINX_CONF="${CONFIG_DIR}/manticore.conf"
 CONFIG_SITE_PHP="${CONFIG_DIR}/config-site.php"
 PILER_MY_CNF="${CONFIG_DIR}/.my.cnf"
 RT="${RT:-0}"
-MEMCACHED_HOSTNAME="${MEMCACHED_HOSTNAME:-memcached}"
-
 
 error() {
    echo "ERROR:" "$*" 1>&2
@@ -119,7 +117,7 @@ fix_configs() {
          echo "\$config['DB_USERNAME'] = '$MYSQL_USER';"
          echo "\$config['DB_PASSWORD'] = '$MYSQL_PASSWORD';"
          echo "\$config['ENABLE_MEMCACHED'] = 1;"
-         echo "\$memcached_server = ['$MEMCACHED_HOSTNAME', 11211];"
+         echo "\$memcached_server = ['memcached', 11211];"
       } >> "$CONFIG_SITE_PHP"
    fi
 
@@ -188,9 +186,8 @@ create_my_cnf_files() {
 
 start_services() {
    service cron start
-   service php8.3-fpm start
+   service php8.1-fpm start
    service nginx start
-   rm -f /run/rsyslogd.pid
    rsyslogd
 }
 

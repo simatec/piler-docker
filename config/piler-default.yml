@@ -17,6 +17,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - TZ="Europe/Berlin"
+      - MARIADB_AUTO_UPGRADE=TRUE
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
@@ -31,6 +32,8 @@ services:
     image: memcached:latest
     container_name: memcached
     restart: unless-stopped
+    cap_drop:
+      - ALL
     command: -m 64
 
   piler:
