@@ -29,10 +29,8 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: memcached_piler
+    container_name: memcached
     restart: unless-stopped
-    cap_drop:
-      - ALL
     command: -m 64
 
   piler:
@@ -42,6 +40,7 @@ services:
     hostname: ${PILER_DOMAIN}
     init: true
     environment:
+      - MEMCACHED_HOSTNAME=memcached
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
@@ -73,7 +72,6 @@ services:
           memory: 512M
         limits:
           memory: 512M
-
     depends_on:
       - "memcached"
       - "mysql"
