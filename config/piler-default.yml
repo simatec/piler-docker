@@ -51,6 +51,7 @@ services:
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - MEMCACHED_HOST=memcached
       - TZ=${TIME_ZONE}
+      - RT=1
     ports:
       - "25:25"
       - "80:80"
