@@ -84,7 +84,7 @@ required_version="1.4.5"
 
 if compare_versions "$PILER_VERSION" "$required_version"; then
     file="/var/lib/docker/volumes/piler-docker_piler_etc/_data/manticore.conf"
-    patchNum="pilerPatch_001"
+    patchNum="pilerPatch001"
 
     search_entry="127.0.0.1:9307:"
     new_entry="${entry}\tlisten\t\t\t= 127.0.0.1:9307:mysql_readonly"
@@ -99,7 +99,7 @@ if compare_versions "$PILER_VERSION" "$required_version"; then
             if grep -q '\btlisten\b' "$file"; then
               sed -i 's/\btlisten\b/listen/g' "$file"
             fi
-            
+
             echo "Patch manticore.conf with new entry: listen = 127.0.0.1:9307:mysql_readonly"
         else
             echo "Patch already executed. No action required"
