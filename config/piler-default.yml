@@ -4,6 +4,7 @@ services:
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
     container_name: mysql_piler
+    hostname: mysql
     restart: unless-stopped
     cap_drop:
       - ALL
@@ -31,6 +32,7 @@ services:
   memcached:
     image: memcached:latest
     container_name: memcached
+    hostname: memcached
     restart: unless-stopped
     cap_drop:
       - ALL

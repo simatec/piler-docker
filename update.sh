@@ -204,6 +204,11 @@ if [ "$USE_LETSENCRYPT" = "yes" ]; then
 else
   cp $configPth/piler-default.yml $installPth/docker-compose.yml
 fi
+# Check for Patches before Update
+bash $installPth/patch.sh
+BLA::start_loading_animation "${BLA_metro[@]}"
+sleep 5
+BLA::stop_loading_animation
 
 # start Update Container
 echo

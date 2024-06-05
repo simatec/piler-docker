@@ -24,6 +24,7 @@ services:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
+    hostname: mysql
     container_name: mysql-piler
     restart: unless-stopped
     cap_drop:
@@ -52,6 +53,7 @@ services:
   memcached:
     image: memcached:latest
     container_name: memcached-piler
+    hostname: memcached
     restart: unless-stopped
     cap_drop:
       - ALL
