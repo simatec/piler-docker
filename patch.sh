@@ -95,6 +95,11 @@ if compare_versions "$PILER_VERSION" "$required_version"; then
             # If the entry does not exist, set the entry in the manticore.conf
             sed -i "/listen/!b; :a; {n; /listen/!ba}; a $new_entry" "$file"
             sed -i "s/\<$patchNum\>//g" "$file"
+
+            if grep -q '\btlisten\b' "$file"; then
+              sed -i 's/\btlisten\b/listen/g' "$file"
+            fi
+            
             echo "Patch manticore.conf with new entry: listen = 127.0.0.1:9307:mysql_readonly"
         else
             echo "Patch already executed. No action required"

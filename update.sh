@@ -132,7 +132,7 @@ for ymlUpdate in piler-default.yml piler-ssl.yml; do
   echo
 done
 
-for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
+for fileUpdate in install-piler.sh LICENSE piler.conf.example patch.sh; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $fileUpdate ******"
