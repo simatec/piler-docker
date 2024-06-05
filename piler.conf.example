@@ -63,6 +63,10 @@ MAILCOW_APIKEY="your_Mailcow_API-Key"
 
 MAILCOW_HOST="mail.example.com"
 
+# Import Interval Settings
+
+AUTO_IMPORT=false
+
 # ------ Container Versions --------
 
 # Piler Version

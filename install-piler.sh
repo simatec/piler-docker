@@ -213,8 +213,8 @@ if [ ! -f $installPth/.configDone ]; then
     while true; do
         read -ep "If Use automatic import to 5 minutes interval (yes/no)? / Y|N (Default: no): " jn
         case $jn in
-            [Yy]* ) AUTO_IMPORT=true; break;;
-            [Nn]* ) AUTO_IMPORT=false; break;;
+            [Yy]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=true/g' ./piler.conf; break;;
+            [Nn]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=false/g' ./piler.conf; break;;
             * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
         esac
     done
@@ -435,6 +435,8 @@ cat >> $cronPth/piler <<EOF
 ### Piler import added by Piler-Installer
 */5 * * * * /usr/libexec/piler/import.sh
 EOF
+
+chown 1000:crontab $cronPth/piler
 fi
 
 if [ "$USE_MAILCOW" = true ]; then
