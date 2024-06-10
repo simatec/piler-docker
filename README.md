@@ -153,6 +153,8 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+### 0.9.5 (10.06.2024)
+* (simatec) small fix
 
 ### 0.9.4 (05.06.2024)
 * (simatec) patch for Piler Update added
