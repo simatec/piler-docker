@@ -24,8 +24,8 @@ services:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
+    container_name: mysql
     hostname: mysql
-    container_name: mysql-piler
     restart: unless-stopped
     cap_drop:
       - ALL
@@ -39,7 +39,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - TZ="Europe/Berlin"
-      - MARIADB_AUTO_UPGRADE=TRUE
+      #- MARIADB_AUTO_UPGRADE=TRUE
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
@@ -52,7 +52,7 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: memcached-piler
+    container_name: memcached
     hostname: memcached
     restart: unless-stopped
     cap_drop:
