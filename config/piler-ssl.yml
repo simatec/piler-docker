@@ -101,8 +101,8 @@ services:
           memory: 512M
 
     depends_on:
-      - "memcached_piler"
-      - "mysql_piler"
+      - "memcached"
+      - "mysql"
 
 networks:
   default:
