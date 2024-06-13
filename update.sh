@@ -246,27 +246,44 @@ else
   docker-compose up --force-recreate --build -d
 fi
 
-echo
-echo "${greenBold}${HLINE}"
-echo "${greenBold}             Piler Update completed successfully"
-echo "${greenBold}${HLINE}${normal}"
-echo
-echo
-echo "${greenBold}${HLINE}${HLINE_SMALL}"
 
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-  echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
-else
-  echo "${greenBold}you can start in your Browser with:"
-  echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
-fi
+while true; do
+    read -ep "Do you want to perform the Reindex?? (y/n): " yn
+    case $yn in
+        [Yy]* ) echo "${greenBold}********* Reindex started... Please wait... *********${normal}"; break;;
+        [Nn]* ) echo -e "${redBold}    Update without Reindex!${normal}"; finish_info;;
+        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
+    esac
+done
 
-echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
+BLA::start_loading_animation "${BLA_metro[@]}"
+docker exec -u piler -w /var/tmp piler reindex -a
+BLA::stop_loading_animation
+finish_info
 
-echo
-echo "${blue}${HLINE}"
-echo "${blue}You can remove the old unused containers on your system!"
-echo "${blue}Execute the following command: docker system prune"
-echo "${blue}${HLINE}${normal}"
-echo
-exit 0
+function finish_info {
+  echo
+  echo "${greenBold}${HLINE}"
+  echo "${greenBold}             Piler Update completed successfully"
+  echo "${greenBold}${HLINE}${normal}"
+  echo
+  echo
+  echo "${greenBold}${HLINE}${HLINE_SMALL}"
+
+  if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
+  else
+    echo "${greenBold}you can start in your Browser with:"
+    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
+  fi
+
+  echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
+
+  echo
+  echo "${blue}${HLINE}"
+  echo "${blue}You can remove the old unused containers on your system!"
+  echo "${blue}Execute the following command: docker system prune"
+  echo "${blue}${HLINE}${normal}"
+  echo
+  exit 0
+}
