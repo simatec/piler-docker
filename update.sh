@@ -50,6 +50,32 @@ BLA::stop_loading_animation() {
 }
 
 #######################################################################################
+function finish_info {
+  echo
+  echo "${greenBold}${HLINE}"
+  echo "${greenBold}             Piler Update completed successfully"
+  echo "${greenBold}${HLINE}${normal}"
+  echo
+  echo
+  echo "${greenBold}${HLINE}${HLINE_SMALL}"
+
+  if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
+  else
+    echo "${greenBold}you can start in your Browser with:"
+    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
+  fi
+
+  echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
+
+  echo
+  echo "${blue}${HLINE}"
+  echo "${blue}You can remove the old unused containers on your system!"
+  echo "${blue}Execute the following command: docker system prune"
+  echo "${blue}${HLINE}${normal}"
+  echo
+  exit 0
+}
 
 function header_info {
 clear
@@ -246,7 +272,7 @@ else
   docker-compose up --force-recreate --build -d
 fi
 
-
+sleep 10
 while true; do
     read -ep "Do you want to perform the Reindex?? (y/n): " yn
     case $yn in
@@ -260,30 +286,3 @@ BLA::start_loading_animation "${BLA_metro[@]}"
 docker exec -u piler -w /var/tmp piler reindex -a
 BLA::stop_loading_animation
 finish_info
-
-function finish_info {
-  echo
-  echo "${greenBold}${HLINE}"
-  echo "${greenBold}             Piler Update completed successfully"
-  echo "${greenBold}${HLINE}${normal}"
-  echo
-  echo
-  echo "${greenBold}${HLINE}${HLINE_SMALL}"
-
-  if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
-  else
-    echo "${greenBold}you can start in your Browser with:"
-    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
-  fi
-
-  echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
-
-  echo
-  echo "${blue}${HLINE}"
-  echo "${blue}You can remove the old unused containers on your system!"
-  echo "${blue}Execute the following command: docker system prune"
-  echo "${blue}${HLINE}${normal}"
-  echo
-  exit 0
-}
