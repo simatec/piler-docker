@@ -299,6 +299,14 @@ if [ ! -f $installPth/.env ]; then
     ln -s ./piler.conf .env
 fi
 
+# create Network
+if docker network inspect pilernet > /dev/null 2>&1; then
+    echo "Network pilernet is available"
+else
+    docker network create pilernet
+    echo "Network pilernet created"
+fi
+
 # Build Piler
 #cd $buildPth
 #echo "${greenBold}Start Piler-Build...${normal}" && \
