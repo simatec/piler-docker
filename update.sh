@@ -272,7 +272,13 @@ else
   docker-compose up --force-recreate --build -d
 fi
 
-sleep 10
+sleep 5
+echo
+echo "${greenBold}${HLINE}"
+echo "${greenBold}                 Reindex Piler"
+echo "${greenBold}${HLINE}${normal}"
+echo
+
 while true; do
     read -ep "Do you want to perform the Reindex?? (y/n): " yn
     case $yn in
