@@ -181,14 +181,8 @@ EOF
 echo "Patch config-site.php with your Settings"
 fi
 
-
 if [ "$USE_MAILCOW" = true ]; then
 
-echo
-echo "${blue}${HLINE}"
-echo "set Mailcow Api-Key config"
-echo "${blue}${HLINE}${normal}"
-echo
 if ! grep -qF "// Mailcow API" "$configSite"; then
 cat >> $configSite <<EOF
 
