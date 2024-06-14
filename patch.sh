@@ -110,4 +110,105 @@ if compare_versions "$PILER_VERSION" "$required_version"; then
 fi
 #######################################################################################
 
+################################ Patch config-site-php ################################
+configSite="/var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php"
+etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+
+if ! grep -qF "### Begin added by Piler-Installer ###" "$configSite"; then
+cat >> $configSite <<EOF
+
+// ### Begin added by Piler-Installer ###
+// Smarthost
+\$config['SMARTHOST'] = '$SMARTHOST';
+\$config['SMARTHOST_PORT'] = '25';
+
+// CUSTOM
+\$config['PROVIDED_BY'] = '$PILER_DOMAIN';
+\$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
+\$config['COMPATIBILITY'] = '';
+
+// fancy features.
+\$config['ENABLE_INSTANT_SEARCH'] = 1;
+\$config['ENABLE_TABLE_RESIZE'] = 1;
+
+\$config['ENABLE_DELETE'] = 1;
+\$config['ENABLE_ON_THE_FLY_VERIFICATION'] = 1;
+
+// general settings.
+\$config['TIMEZONE'] = '$TIME_ZONE';
+
+// authentication
+// Enable authentication against an imap server
+\$config['ENABLE_IMAP_AUTH'] = 1;
+\$config['RESTORE_OVER_IMAP'] = 1;
+\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
+\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
+\$config['IMAP_HOST'] = '$IMAP_SERVER';
+\$config['IMAP_PORT'] =  993;
+\$config['IMAP_SSL'] = true;
+
+// authentication against an ldap directory (disabled by default)
+//\$config['ENABLE_LDAP_AUTH'] = 1;
+//\$config['LDAP_HOST'] = '$SMARTHOST';
+//\$config['LDAP_PORT'] = 389;
+//\$config['LDAP_HELPER_DN'] = 'cn=administrator,cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
+//\$config['LDAP_MAIL_ATTR'] = 'mail';
+//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
+//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
+//\$config['LDAP_BASE_DN'] = 'ou=Benutzer,dc=krs,dc=local';
+
+// authentication against an Uninvention based ldap directory 
+//\$config['ENABLE_LDAP_AUTH'] = 1;
+//\$config['LDAP_HOST'] = '$SMARTHOST';
+//\$config['LDAP_PORT'] = 7389;
+//\$config['LDAP_HELPER_DN'] = 'uid=ldap-search-user,cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_HELPER_PASSWORD'] = 'myxxxxpasswd';
+//\$config['LDAP_AUDITOR_MEMBER_DN'] = '';
+//\$config['LDAP_ADMIN_MEMBER_DN'] = '';
+//\$config['LDAP_BASE_DN'] = 'cn=users,dc=mydomain,dc=local';
+//\$config['LDAP_MAIL_ATTR'] = 'mailPrimaryAddress';
+//\$config['LDAP_ACCOUNT_OBJECTCLASS'] = 'person';
+//\$config['LDAP_DISTRIBUTIONLIST_OBJECTCLASS'] = 'person';
+//\$config['LDAP_DISTRIBUTIONLIST_ATTR'] = 'mailAlternativeAddress';
+
+// special settings.
+//\$config['MEMCACHED_ENABLED'] = 1;
+\$config['SPHINX_STRICT_SCHEMA'] = 1; // required for Sphinx see https://bitbucket.org/jsuto/piler/issues/1085/sphinx-331.
+// ### end added by Piler-Installer ###
+EOF
+
+echo "Patch config-site.php with your Settings"
+fi
+
+
+if [ "$USE_MAILCOW" = true ]; then
+
+echo
+echo "${blue}${HLINE}"
+echo "set Mailcow Api-Key config"
+echo "${blue}${HLINE}${normal}"
+echo
+if ! grep -qF "// Mailcow API" "$configSite"; then
+cat >> $configSite <<EOF
+
+// ### Begin added by Piler-Installer ###
+// Mailcow API
+\$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
+\$config['MAILCOW_SET_REALNAME'] = true;
+\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+include('auth-mailcow.php');
+// ### end added by Piler-Installer ###
+EOF
+fi
+
+wget https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php -O $etcPth/auth-mailcow.php
+fi
+
+echo "Patch Mailcow Api-Key config"
+
+#######################################################################################
+
+
 exit 0

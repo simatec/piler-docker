@@ -222,19 +222,10 @@ fi
 
 cp -rf $etcPth/* $installPth/backup/
 
-# delete old files
-#rm -f $etcPth/piler.key $etcPth/piler.pem $etcPth/config-site.php
-
 # Added Manticore
 if [ ! -f $etcPth/MANTICORE ]; then
   touch $etcPth/MANTICORE
 fi
-
-# Build Piler
-#cd $buildPth
-#echo "${greenBold}Start Piler-Build...${normal}" && \
-#bash build.sh && \
-#echo "${greenBold}Piler-Build finish${normal}"
 
 # Copy docker-compose.yml
 if [ "$USE_LETSENCRYPT" = "yes" ]; then
