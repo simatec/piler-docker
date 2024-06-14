@@ -57,16 +57,17 @@ function finish_info {
   echo "${greenBold}${HLINE}${normal}"
   echo
   echo
-  echo "${greenBold}${HLINE}${HLINE_SMALL}"
+  echo "${greenBold}${HLINE}"
 
   if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
+    echo "${greenBold}you can start in your Browser with:"
+    echo "${greenBold}https://${PILER_DOMAIN}"
   else
     echo "${greenBold}you can start in your Browser with:"
     echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
   fi
 
-  echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
+  echo "${greenBold}${HLINE}${normal}"
 
   echo
   echo "${blue}${HLINE}"
