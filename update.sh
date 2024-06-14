@@ -272,7 +272,6 @@ else
   docker-compose up --force-recreate --build -d
 fi
 
-sleep 5
 echo
 echo "${greenBold}${HLINE}"
 echo "${greenBold}                 Reindex Piler"
@@ -289,6 +288,7 @@ while true; do
 done
 
 BLA::start_loading_animation "${BLA_metro[@]}"
+sleep 15
 docker exec -u piler -w /var/tmp piler reindex -a
 BLA::stop_loading_animation
 finish_info
