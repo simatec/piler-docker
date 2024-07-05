@@ -155,6 +155,9 @@ To leave the container on the console you have to execute 2x `exit`.
 ## Changelog
 
 ### 0.9.7 (14.06.2024)
+* (simatec) Fix Network on Update
+
+### 0.9.7 (14.06.2024)
 * (simatec) Release 0.9.7
 
 ### 0.9.6 (11.06.2024)

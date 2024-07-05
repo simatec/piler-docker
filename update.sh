@@ -215,6 +215,14 @@ else
   docker-compose down
 fi
 
+# create Network
+if docker network inspect pilernet > /dev/null 2>&1; then
+    echo "Network pilernet is available"
+else
+    docker network create pilernet
+    echo "Network pilernet created"
+fi
+
 # Backup Config
 if [ ! -d $installPth/backup ]; then
   mkdir -p $installPth/backup
