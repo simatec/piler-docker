@@ -264,7 +264,7 @@ elif [ -f $installPth/.configDone ]; then
                 echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
                 echo
             done
-
+            touch $installPth/.update
             bash $installPth/update.sh && exit 0
         fi
     done

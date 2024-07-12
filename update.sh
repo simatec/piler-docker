@@ -148,6 +148,17 @@ configPth="$installPth/config"
 etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 buildPth="$installPth/build"
 
+if [ ! -f $installPth/.update ]; then
+  echo
+  echo "${redBold}${HLINE}"
+  echo "${redBold}           Please restart the update with installer.sh"
+  echo "${redBold}${HLINE}${normal}"
+  echo
+  exit 1
+else
+  rm $installPth/.update
+fi
+
 if [ -f $installPth/docker-compose.yml ]; then
   rm $installPth/docker-compose.yml
 fi
