@@ -151,7 +151,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # IMAP Server
     while true; do
-        read -ep "Do you want to use IMAP Auth? " jn
+        read -ep "Do you want to use IMAP Auth? (y/n): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
             read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
