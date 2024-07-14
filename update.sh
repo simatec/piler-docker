@@ -135,7 +135,7 @@ fi
 #######################################################################################
 
 while true; do
-    read -ep "Do you want to perform the update?? (y/n): " yn
+    read -ep "Do you want to perform the update? (y/n): " yn
     case $yn in
         [Yy]* ) echo "${greenBold}********* Update started... Please wait... *********${normal}"; break;;
         [Nn]* ) echo -e "${redBold}    The update is canceled!${normal}"; exit;;
@@ -290,7 +290,7 @@ echo "${greenBold}${HLINE}${normal}"
 echo
 
 while true; do
-    read -ep "Do you want to perform the Reindex?? (y/n): " yn
+    read -ep "Do you want to perform the Reindex? (y/n): " yn
     case $yn in
         [Yy]* ) echo "${greenBold}********* Reindex started... Please wait... *********${normal}"; break;;
         [Nn]* ) echo -e "${redBold}    Update without Reindex!${normal}"; finish_info;;

@@ -151,7 +151,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # IMAP Server
     while true; do
-        read -ep "Do you want to use IMAP Auth? (y/n): " jn
+        read -ep "Do you want to use IMAP Auth? (y/n) (Default: yes): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
             read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
@@ -159,7 +159,11 @@ if [ ! -f $installPth/.configDone ]; then
             sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
             break;;
             [Nn]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=false/g' ./piler.conf; break;;
-            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+            * ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
+            read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+            imapServer=${imapServer:=$IMAP_SERVER}
+            sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+            break;;
         esac
     done
 
@@ -187,7 +191,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # use Let's Encrypt
     while true; do
-        read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
+        read -ep "Do you want to use Let's Encrypt? For local Run disabled / (y/n): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
@@ -207,7 +211,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # use Mailcow
     while true; do
-        read -ep "If Use Mailcow API Options (yes/no)? / Y|N: " jn
+        read -ep "If Use Mailcow API Options (yes/no)? / (y/n): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
@@ -232,7 +236,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # Import Interval Settings 
     while true; do
-        read -ep "If Use automatic import to 5 minutes interval (yes/no)? / Y|N (Default: no): " jn
+        read -ep "If Use automatic import to 5 minutes interval? / (y/n) (Default: no): " jn
         case $jn in
             [Yy]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=true/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=false/g' ./piler.conf; break;;
@@ -291,7 +295,7 @@ done
 
 # start piler install
 while true; do
-    read -ep "Do you want to start the Piler installation now? / Y|N: " yn
+    read -ep "Do you want to start the Piler installation now? / (y/n): " yn
     case $yn in
         [Yy]* ) echo -e "${greenBold}Piler install started!! ${normal}"; break;;
         [Nn]* ) echo -e "${redBold}Aborting the Piler installation!! ${normal}"; exit;;
