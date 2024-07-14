@@ -150,9 +150,22 @@ if [ ! -f $installPth/.configDone ]; then
     sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
 
     # IMAP Server
-    read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
-    imapServer=${imapServer:=$IMAP_SERVER}
-    sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+    while true; do
+        read -ep "Do you want to use IMAP Auth? (y/n) (Default: yes): " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
+            read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+            imapServer=${imapServer:=$IMAP_SERVER}
+            sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+            break;;
+            [Nn]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=false/g' ./piler.conf; break;;
+            * ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
+            read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+            imapServer=${imapServer:=$IMAP_SERVER}
+            sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+            break;;
+        esac
+    done
 
     # Timezone
     read -ep "Please set your Timezone (Enter for default: $TIME_ZONE): " timeZone
@@ -178,7 +191,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # use Let's Encrypt
     while true; do
-        read -ep "Enabled / Disabled (yes/no) Let's Encrypt? For local Run disabled / Y|N: " jn
+        read -ep "Do you want to use Let's Encrypt? For local Run disabled / (y/n): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="yes"/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_LETSENCRYPT=.*/USE_LETSENCRYPT="no"/g' ./piler.conf; break;;
@@ -198,7 +211,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # use Mailcow
     while true; do
-        read -ep "If Use Mailcow API Options (yes/no)? / Y|N: " jn
+        read -ep "If Use Mailcow API Options (yes/no)? / (y/n): " jn
         case $jn in
             [Yy]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=true/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/USE_MAILCOW=.*/USE_MAILCOW=false/g' ./piler.conf; break;;
@@ -223,7 +236,7 @@ if [ ! -f $installPth/.configDone ]; then
 
     # Import Interval Settings 
     while true; do
-        read -ep "If Use automatic import to 5 minutes interval (yes/no)? / Y|N (Default: no): " jn
+        read -ep "If Use automatic import to 5 minutes interval? / (y/n) (Default: no): " jn
         case $jn in
             [Yy]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=true/g' ./piler.conf; break;;
             [Nn]* ) sed -i 's/AUTO_IMPORT=.*/AUTO_IMPORT=false/g' ./piler.conf; break;;
@@ -282,7 +295,7 @@ done
 
 # start piler install
 while true; do
-    read -ep "Do you want to start the Piler installation now? / Y|N: " yn
+    read -ep "Do you want to start the Piler installation now? / (y/n): " yn
     case $yn in
         [Yy]* ) echo -e "${greenBold}Piler install started!! ${normal}"; break;;
         [Nn]* ) echo -e "${redBold}Aborting the Piler installation!! ${normal}"; exit;;
@@ -407,16 +420,6 @@ cat >> $etcPth/config-site.php <<EOF
 // general settings.
 \$config['TIMEZONE'] = '$TIME_ZONE';
 
-// authentication
-// Enable authentication against an imap server
-\$config['ENABLE_IMAP_AUTH'] = 1;
-\$config['RESTORE_OVER_IMAP'] = 1;
-\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
-\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
-\$config['IMAP_HOST'] = '$IMAP_SERVER';
-\$config['IMAP_PORT'] =  993;
-\$config['IMAP_SSL'] = true;
-
 // authentication against an ldap directory (disabled by default)
 //\$config['ENABLE_LDAP_AUTH'] = 1;
 //\$config['LDAP_HOST'] = '$SMARTHOST';
@@ -458,6 +461,26 @@ EOF
 
 chown 1000:crontab $cronPth/piler
 fi
+
+# Make config when IMAPAuth is enabled
+
+if [ "$USE_IMAPAUTH" = true ]; then
+
+cat >> $etcPth/config-site.php <<EOF
+
+// authentication
+// Enable authentication against an imap server
+\$config['ENABLE_IMAP_AUTH'] = 1;
+\$config['RESTORE_OVER_IMAP'] = 1;
+\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
+\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
+\$config['IMAP_HOST'] = '$IMAP_SERVER';
+\$config['IMAP_PORT'] =  993;
+\$config['IMAP_SSL'] = true;
+EOF
+fi
+
+# Make config when Mailcow is enabled
 
 if [ "$USE_MAILCOW" = true ]; then
 

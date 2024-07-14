@@ -14,6 +14,8 @@ DEFAULT_RETENTION_DAYS="2555"
 
 # your IMAP Server
 
+USE_IMAPAUTH=true
+
 IMAP_SERVER="imap.example.com"
 
 # your Timezone
