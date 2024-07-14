@@ -137,16 +137,6 @@ cat >> $configSite <<EOF
 // general settings.
 \$config['TIMEZONE'] = '$TIME_ZONE';
 
-// authentication
-// Enable authentication against an imap server
-\$config['ENABLE_IMAP_AUTH'] = 1;
-\$config['RESTORE_OVER_IMAP'] = 1;
-\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
-\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
-\$config['IMAP_HOST'] = '$IMAP_SERVER';
-\$config['IMAP_PORT'] =  993;
-\$config['IMAP_SSL'] = true;
-
 // authentication against an ldap directory (disabled by default)
 //\$config['ENABLE_LDAP_AUTH'] = 1;
 //\$config['LDAP_HOST'] = '$SMARTHOST';
@@ -180,6 +170,23 @@ EOF
 
 echo "Patch config-site.php with your Settings"
 fi
+
+
+if [ "$USE_IMAPAUTH" = true ]; then
+cat >> $configSite <<EOF
+
+// authentication
+// Enable authentication against an imap server
+\$config['ENABLE_IMAP_AUTH'] = 1;
+\$config['RESTORE_OVER_IMAP'] = 1;
+\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
+\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
+\$config['IMAP_HOST'] = '$IMAP_SERVER';
+\$config['IMAP_PORT'] =  993;
+\$config['IMAP_SSL'] = true;
+EOF
+fi
+
 
 if [ "$USE_MAILCOW" = true ]; then
 

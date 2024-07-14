@@ -150,9 +150,18 @@ if [ ! -f $installPth/.configDone ]; then
     sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
 
     # IMAP Server
-    read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
-    imapServer=${imapServer:=$IMAP_SERVER}
-    sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+    while true; do
+        read -ep "Do you want to use IMAP Auth? " jn
+        case $jn in
+            [Yy]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=true/g' ./piler.conf;
+            read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
+            imapServer=${imapServer:=$IMAP_SERVER}
+            sed -i 's/IMAP_SERVER=.*/IMAP_SERVER="'$imapServer'"/g' ./piler.conf
+            break;;
+            [Nn]* ) sed -i 's/USE_IMAPAUTH=.*/USE_IMAPAUTH=false/g' ./piler.conf; break;;
+            * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+        esac
+    done
 
     # Timezone
     read -ep "Please set your Timezone (Enter for default: $TIME_ZONE): " timeZone
@@ -407,16 +416,6 @@ cat >> $etcPth/config-site.php <<EOF
 // general settings.
 \$config['TIMEZONE'] = '$TIME_ZONE';
 
-// authentication
-// Enable authentication against an imap server
-\$config['ENABLE_IMAP_AUTH'] = 1;
-\$config['RESTORE_OVER_IMAP'] = 1;
-\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
-\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
-\$config['IMAP_HOST'] = '$IMAP_SERVER';
-\$config['IMAP_PORT'] =  993;
-\$config['IMAP_SSL'] = true;
-
 // authentication against an ldap directory (disabled by default)
 //\$config['ENABLE_LDAP_AUTH'] = 1;
 //\$config['LDAP_HOST'] = '$SMARTHOST';
@@ -458,6 +457,26 @@ EOF
 
 chown 1000:crontab $cronPth/piler
 fi
+
+# Make config when IMAPAuth is enabled
+
+if [ "$USE_IMAPAUTH" = true ]; then
+
+cat >> $etcPth/config-site.php <<EOF
+
+// authentication
+// Enable authentication against an imap server
+\$config['ENABLE_IMAP_AUTH'] = 1;
+\$config['RESTORE_OVER_IMAP'] = 1;
+\$config['IMAP_RESTORE_FOLDER_INBOX'] = 'INBOX';
+\$config['IMAP_RESTORE_FOLDER_SENT'] = 'Sent';
+\$config['IMAP_HOST'] = '$IMAP_SERVER';
+\$config['IMAP_PORT'] =  993;
+\$config['IMAP_SSL'] = true;
+EOF
+fi
+
+# Make config when Mailcow is enabled
 
 if [ "$USE_MAILCOW" = true ]; then
 
