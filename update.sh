@@ -250,16 +250,16 @@ if [ ! -f $etcPth/MANTICORE ]; then
 fi
 
 # Copy docker-compose.yml
-if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
 then
     cp "${configPth}/piler-ssl.yml" "${installPth}/docker-compose.yml"
-elif [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+elif [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
 then
     cp "${configPth}/piler-ssl-no-mysql.yml" "${installPth}/docker-compose.yml"
-elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
 then
     cp "${configPth}/piler-default.yml" "${installPth}/docker-compose.yml"
-elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
 then
     cp "${configPth}/piler-default-no-mysql.yml" "${installPth}/docker-compose.yml"
 fi
