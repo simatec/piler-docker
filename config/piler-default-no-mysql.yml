@@ -1,9 +1,10 @@
-version: "3"
 services:
   memcached:
     image: memcached:latest
     container_name: memcached_piler
     restart: unless-stopped
+    networks:
+      - pilernet
     cap_drop:
       - ALL
     command: -m 64
@@ -12,16 +13,20 @@ services:
     image: simatec/piler:${PILER_VERSION}
     container_name: piler
     restart: unless-stopped
+    networks:
+      - pilernet
     hostname: ${PILER_DOMAIN}
     init: true
     environment:
+      - MEMCACHED_HOSTNAME=memcached
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_HOSTNAME=${MYSQL_HOSTNAME}
       - PILER_HOSTNAME=${PILER_DOMAIN}
-      - MEMCACHED_HOST=memcached
+      - MEMCACHED_HOST=memcached_piler
       - TZ=${TIME_ZONE}
+      - RT=1
     ports:
       - "${SMTP_PORT}:25"
       - "${HTTP_PORT}:80"
@@ -46,9 +51,12 @@ services:
           memory: 512M
         limits:
           memory: 512M
-
     depends_on:
-      - "memcached"
+      - memcached
+
+networks:
+  pilernet:
+    external: true
 
 volumes:
   piler_etc:

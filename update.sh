@@ -50,12 +50,50 @@ BLA::stop_loading_animation() {
 }
 
 #######################################################################################
+function finish_info {
+  echo
+  echo "${greenBold}${HLINE}"
+  echo "${greenBold}             Piler Update completed successfully"
+  echo "${greenBold}${HLINE}${normal}"
+  echo
+  echo
+  echo "${greenBold}${HLINE}"
 
-echo
-echo "${greenBold}${HLINE_SMALL}"
-echo "Welcome to Piler-Docker Updater"
-echo "${greenBold}${HLINE_SMALL}${normal}"
-echo
+  if [ "$USE_LETSENCRYPT" = "yes" ]; then
+    echo "${greenBold}you can start in your Browser with:"
+    echo "${greenBold}https://${PILER_DOMAIN}"
+  else
+    echo "${greenBold}you can start in your Browser with:"
+    echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
+  fi
+
+  echo "${greenBold}${HLINE}${normal}"
+
+  echo
+  echo "${blue}${HLINE}"
+  echo "${blue}You can remove the old unused containers on your system!"
+  echo "${blue}Execute the following command: docker system prune"
+  echo "${blue}${HLINE}${normal}"
+  echo
+  exit 0
+}
+
+function header_info {
+clear
+
+echo "${greenBold}"
+cat <<"EOF"
+        _ _             _   _           _       _
+  _ __ (_) | ___ _ __  | | | |_ __   __| | __ _| |_ ___
+ | '_ \| | |/ _ \ '__| | | | | '_ \ / _` |/ _` | __/ _ \
+ | |_) | | |  __/ |    | |_| | |_) | (_| | (_| | ||  __/
+ | .__/|_|_|\___|_|     \___/| .__/ \__,_|\__,_|\__\___|
+ |_|                         |_|
+
+EOF
+echo "${normal}"
+}
+header_info
 
 #######################################################################################
 
@@ -113,6 +151,17 @@ configPth="$installPth/config"
 etcPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_etc/_data"
 buildPth="$installPth/build"
 
+if [ ! -f $installPth/.update ]; then
+  echo
+  echo "${redBold}${HLINE}"
+  echo "${redBold}           Please restart the update with installer.sh"
+  echo "${redBold}${HLINE}${normal}"
+  echo
+  exit 1
+else
+  rm $installPth/.update
+fi
+
 if [ -f $installPth/docker-compose.yml ]; then
   rm $installPth/docker-compose.yml
 fi
@@ -135,7 +184,7 @@ for ymlUpdate in piler-default.yml piler-default-no-mysql.yml piler-ssl.yml pile
   echo
 done
 
-for fileUpdate in install-piler.sh LICENSE piler.conf.example; do
+for fileUpdate in install-piler.sh LICENSE piler.conf.example patch.sh; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $fileUpdate ******"
@@ -180,6 +229,14 @@ else
   docker-compose down
 fi
 
+# create Network
+if docker network inspect pilernet > /dev/null 2>&1; then
+    echo "Network pilernet is available"
+else
+    docker network create pilernet
+    echo "Network pilernet created"
+fi
+
 # Backup Config
 if [ ! -d $installPth/backup ]; then
   mkdir -p $installPth/backup
@@ -187,19 +244,10 @@ fi
 
 cp -rf $etcPth/* $installPth/backup/
 
-# delete old files
-#rm -f $etcPth/piler.key $etcPth/piler.pem $etcPth/config-site.php
-
 # Added Manticore
 if [ ! -f $etcPth/MANTICORE ]; then
   touch $etcPth/MANTICORE
 fi
-
-# Build Piler
-#cd $buildPth
-#echo "${greenBold}Start Piler-Build...${normal}" && \
-#bash build.sh && \
-#echo "${greenBold}Piler-Build finish${normal}"
 
 # Copy docker-compose.yml
 if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
@@ -215,6 +263,11 @@ elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql
 then
     cp "${configPth}/piler-default-no-mysql.yml" "${installPth}/docker-compose.yml"
 fi
+# Check for Patches before Update
+bash $installPth/patch.sh
+BLA::start_loading_animation "${BLA_metro[@]}"
+sleep 5
+BLA::stop_loading_animation
 
 # start Update Container
 echo
@@ -243,25 +296,21 @@ fi
 
 echo
 echo "${greenBold}${HLINE}"
-echo "${greenBold}             Piler Update completed successfully"
+echo "${greenBold}                 Reindex Piler"
 echo "${greenBold}${HLINE}${normal}"
 echo
-echo
-echo "${greenBold}${HLINE}${HLINE_SMALL}"
 
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-  echo "${greenBold}you can start in your Browser with https://${PILER_DOMAIN}!"
-else
-  echo "${greenBold}you can start in your Browser with:"
-  echo "${greenBold}http://${PILER_DOMAIN} or http://local-ip"
-fi
+while true; do
+    read -ep "Do you want to perform the Reindex?? (y/n): " yn
+    case $yn in
+        [Yy]* ) echo "${greenBold}********* Reindex started... Please wait... *********${normal}"; break;;
+        [Nn]* ) echo -e "${redBold}    Update without Reindex!${normal}"; finish_info;;
+        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
+    esac
+done
 
-echo "${greenBold}${HLINE}${HLINE_SMALL}${normal}"
-
-echo
-echo "${blue}${HLINE}"
-echo "${blue}You can remove the old unused containers on your system!"
-echo "${blue}Execute the following command: docker system prune"
-echo "${blue}${HLINE}${normal}"
-echo
-exit 0
+BLA::start_loading_animation "${BLA_metro[@]}"
+sleep 15
+docker exec -u piler -w /var/tmp piler reindex -a
+BLA::stop_loading_animation
+finish_info

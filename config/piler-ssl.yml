@@ -1,9 +1,10 @@
-version: "3"
 services:
   nginx-proxy:
     image: jwilder/nginx-proxy
     container_name: nginx-proxy
-    restart: always
+    restart: unless-stopped
+    networks:
+      - pilernet
     ports:
       - "${HTTP_PORT}:80"
       - "${HTTPS_PORT}:443"
@@ -12,20 +13,26 @@ services:
       - ./nginx-data/vhost.d:/etc/nginx/vhost.d
       - ./nginx-data/html:/usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
+
   nginx-letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
     container_name: nginx-letsencrypt
-    restart: always
+    restart: unless-stopped
+    networks:
+      - pilernet
     volumes_from:
       - nginx-proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
+
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
-    container_name: mysql-piler
+    container_name: mysql_piler
     restart: unless-stopped
+    networks:
+      - pilernet
     cap_drop:
       - ALL
     cap_add:
@@ -38,6 +45,8 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - TZ="Europe/Berlin"
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
@@ -50,8 +59,10 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: memcached-piler
+    container_name: memcached_piler
     restart: unless-stopped
+    networks:
+      - pilernet
     cap_drop:
       - ALL
     command: -m 64
@@ -60,6 +71,8 @@ services:
     image: simatec/piler:${PILER_VERSION}
     container_name: piler
     restart: unless-stopped
+    networks:
+      - pilernet
     expose:
       - "80"
     hostname: ${PILER_DOMAIN}
@@ -70,8 +83,9 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_HOSTNAME=${MYSQL_HOSTNAME}
       - PILER_HOSTNAME=${PILER_DOMAIN}
-      - MEMCACHED_HOST=memcached
+      - MEMCACHED_HOST=memcached_piler
       - TZ=${TIME_ZONE}
+      - RT=1
       - VIRTUAL_HOST=${PILER_DOMAIN}
       - LETSENCRYPT_HOST=${PILER_DOMAIN}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
@@ -97,15 +111,13 @@ services:
           memory: 512M
         limits:
           memory: 512M
-
     depends_on:
-      - "memcached"
-      - "mysql"
+      - memcached
+      - mysql
 
 networks:
-  default:
-    external:
-      name: nginx-proxy
+  pilernet:
+    external: true
 
 volumes:
   db_data:

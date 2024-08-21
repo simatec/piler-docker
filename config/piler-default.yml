@@ -1,10 +1,10 @@
-version: "3"
 services:
-
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
     container_name: mysql_piler
     restart: unless-stopped
+    networks:
+      - pilernet
     cap_drop:
       - ALL
     cap_add:
@@ -17,6 +17,8 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - TZ="Europe/Berlin"
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
       test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
@@ -31,6 +33,8 @@ services:
     image: memcached:latest
     container_name: memcached_piler
     restart: unless-stopped
+    networks:
+      - pilernet
     cap_drop:
       - ALL
     command: -m 64
@@ -39,16 +43,20 @@ services:
     image: simatec/piler:${PILER_VERSION}
     container_name: piler
     restart: unless-stopped
+    networks:
+      - pilernet
     hostname: ${PILER_DOMAIN}
     init: true
     environment:
+      - MEMCACHED_HOSTNAME=memcached
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_HOSTNAME=${MYSQL_HOSTNAME}
       - PILER_HOSTNAME=${PILER_DOMAIN}
-      - MEMCACHED_HOST=memcached
+      - MEMCACHED_HOST=memcached_piler
       - TZ=${TIME_ZONE}
+      - RT=1
     ports:
       - "${SMTP_PORT}:25"
       - "${HTTP_PORT}:80"
@@ -73,10 +81,13 @@ services:
           memory: 512M
         limits:
           memory: 512M
-
     depends_on:
-      - "memcached"
-      - "mysql"
+      - memcached
+      - mysql
+
+networks:
+  pilernet:
+    external: true
 
 volumes:
   db_data:

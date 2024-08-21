@@ -85,12 +85,16 @@ MAILCOW_APIKEY="your_Mailcow_API-Key"
 
 MAILCOW_HOST="mail.example.com"
 
+# Import Interval Settings
+
+AUTO_IMPORT=false
+
 # ------ Container Versions --------
 
 # Piler Version
 
-PILER_VERSION="1.4.4"
+PILER_VERSION="1.4.5"
 
 # MariaDB Version
 
-MARIA_DB_VERSION="10.6"
+MARIA_DB_VERSION="11.4"
