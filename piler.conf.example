@@ -36,7 +36,7 @@ MYSQL_DATABASE="piler"
 
 # MySql Hostname
 
-MYSQL_HOSTNAME="mysql"
+MYSQL_HOSTNAME="mysql_piler"
 
 # MySql User
 
