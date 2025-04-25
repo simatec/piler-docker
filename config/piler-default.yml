@@ -21,7 +21,7 @@ services:
       - MARIADB_DISABLE_UPGRADE_BACKUP=1
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
+      test: mariadb --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} piler --execute "show tables"
       interval: "60s"
       timeout: "5s"
       start_period: "15s"
