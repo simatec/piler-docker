@@ -91,6 +91,16 @@ The Default Login is `admin@local` and the Password ist `pilerrocks`
 
 > After installation, any changes can be made in piler.conf at any time and the install script can then be run again.
 
+#### Using Custom Database
+
+If you are using a custom database (for example your existing mysql/mariadb server), you have to create the database by yourself.
+
+First create a new user, for example `piler`, and write down the username and password.
+
+After that create a new database, for example `piler`, and then import the `piler.sql` from the examples folder in the new database, so that you have all database tables.<br>
+(Tested with `mailpiler 1.4.4` installation)
+
+Finally enter everything during the installation process (`hostname`, `username`, `password` and `database`).
 
 **********************************************************************************************************
 

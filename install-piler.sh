@@ -106,13 +106,10 @@ else
   exit 1
 fi
 
-#######################################################################################
+################################ Path-Settings #########################################
 
-# Path-Settings
 installPth=`pwd`
 configPth="$installPth/config"
-etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
-cronPth="/var/lib/docker/volumes/piler-docker_piler_cron/_data"
 buildPth="$installPth/build"
 
 ############################## Installer Settings ######################################
@@ -149,6 +146,11 @@ if [ ! -f $installPth/.configDone ]; then
     pilerSmartHost=${pilerSmartHost:=$SMARTHOST}
     sed -i 's/SMARTHOST=.*/SMARTHOST="'$pilerSmartHost'"/g' ./piler.conf
 
+    # Docker Volumes Path
+    read -ep "Please set your Docker Volumes Path (Enter for default: $DOCKER_VOLUMES_PATH): " pilerDockerVolumesPath
+    pilerDockerVolumesPath=${pilerDockerVolumesPath:=$DOCKER_VOLUMES_PATH}
+    sed -i 's#DOCKER_VOLUMES_PATH=.*#DOCKER_VOLUMES_PATH=\"'$pilerDockerVolumesPath'\"#g' ./piler.conf
+
     # IMAP Server
     read -ep "Please set your IMAP Server (Enter for default: $IMAP_SERVER): " imapServer
     imapServer=${imapServer:=$IMAP_SERVER}
@@ -159,6 +161,20 @@ if [ ! -f $installPth/.configDone ]; then
     timeZone=${timeZone:=$TIME_ZONE}
     timeZone="${timeZone////\\/}"
     sed -i 's/TIME_ZONE=.*/TIME_ZONE="'$timeZone'"/g' ./piler.conf
+
+    # MySql Hostname
+    read -ep "Please set your MySql Hostname (only if you use an external database) (Enter for default: $MYSQL_HOSTNAME): " pilerDatabaseHostname
+    pilerDatabaseHostname=${pilerDatabaseHostname:=$MYSQL_HOSTNAME}
+    sed -i 's/MYSQL_HOSTNAME=.*/MYSQL_HOSTNAME="'$pilerDatabaseHostname'"/g' ./piler.conf
+    # Check if external database is used
+    if [[ ! "${pilerDatabaseHostname}" == "mysql" ]]
+    then
+        # User Info
+        printf "\n"
+        echo "You are using an external database."
+        echo "Be sure that the database exists and username/password are correct."
+        printf "\n"
+    fi
 
     # MySql Database
     read -ep "Please set your MySql Database (Enter for default: $MYSQL_DATABASE): " pilerDataBase
@@ -175,6 +191,21 @@ if [ ! -f $installPth/.configDone ]; then
     pilerPassword=$pilerPassword
     sed -i 's/MYSQL_PASSWORD=.*/MYSQL_PASSWORD="'$pilerPassword'"/g' ./piler.conf
     echo
+
+    # SMTP Port
+    read -ep "Please set your SMTP Port (Enter for default: $SMTP_PORT): " pilerSmtpPort
+    pilerSmtpPort=${pilerSmtpPort:=$SMTP_PORT}
+    sed -i 's/SMTP_PORT=.*/SMTP_PORT="'$pilerSmtpPort'"/g' ./piler.conf
+
+    # HTTP Port
+    read -ep "Please set your HTTP Port (Enter for default: $HTTP_PORT): " pilerHttpPort
+    pilerHttpPort=${pilerHttpPort:=$HTTP_PORT}
+    sed -i 's/HTTP_PORT=.*/HTTP_PORT="'$pilerHttpPort'"/g' ./piler.conf
+
+    # HTTPS Port
+    read -ep "Please set your HTTPS Port (Enter for default: $HTTPS_PORT): " pilerHttpsPort
+    pilerHttpsPort=${pilerHttpsPort:=$HTTPS_PORT}
+    sed -i 's/HTTPS_PORT=.*/HTTPS_PORT="'$pilerHttpsPort'"/g' ./piler.conf
 
     # use Let's Encrypt
     while true; do
@@ -270,15 +301,18 @@ elif [ -f $installPth/.configDone ]; then
     done
 fi
 
-# uninstall Postfix
-while true; do
-    read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
-    case $yn in
-        [Yy]* ) apt purge postfix -y; break;;
-        [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
-        * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
-    esac
-done
+# uninstall Postfix, if SMTP_PORT is 25
+if [[ "${SMTP_PORT}" -eq 25 ]]
+then
+    while true; do
+        read -ep "Postfix must be uninstalled prior to installation. Do you want to uninstall Postfix now? (y/n): " yn
+        case $yn in
+            [Yy]* ) apt purge postfix -y; break;;
+            [Nn]* ) echo -e "${redBold}    The installation process is aborted because Postfix has not been uninstalled.!! ${normal}"; exit;;
+            * ) echo -e "${redBold} Please confirm with y or n.${normal}";;
+        esac
+    done
+fi
 
 # start piler install
 while true; do
@@ -289,6 +323,11 @@ while true; do
         * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
     esac
 done
+
+################################ Path-Settings #########################################
+
+etcPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_etc/_data"
+cronPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_cron/_data"
 
 #########################################################################################
 
@@ -317,10 +356,18 @@ if [ -f $installPth/docker-compose.yml ]; then
     rm $installPth/docker-compose.yml
 fi
 
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-    cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
-else
-    cp $configPth/piler-default.yml $installPth/docker-compose.yml
+if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-ssl.yml" "${installPth}/docker-compose.yml"
+elif [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-ssl-no-mysql.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-default.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql" ]]
+then
+    cp "${configPth}/piler-default-no-mysql.yml" "${installPth}/docker-compose.yml"
 fi
 
 # old docker stop
