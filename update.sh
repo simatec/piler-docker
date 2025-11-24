@@ -143,9 +143,12 @@ while true; do
     esac
 done
 
+# config load
+. ./piler.conf
+
 installPth=`pwd`
 configPth="$installPth/config"
-etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
+etcPth="${DOCKER_VOLUMES_PATH}/piler-docker_piler_etc/_data"
 buildPth="$installPth/build"
 
 if [ ! -f $installPth/.update ]; then
@@ -171,7 +174,7 @@ echo "${greenBold}${HLINE}${normal}"
 echo
 
 # Update Files
-for ymlUpdate in piler-default.yml piler-ssl.yml; do
+for ymlUpdate in piler-default.yml piler-default-no-mysql.yml piler-ssl.yml piler-ssl-no-mysql.yml; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $ymlUpdate ******"
@@ -247,10 +250,18 @@ if [ ! -f $etcPth/MANTICORE ]; then
 fi
 
 # Copy docker-compose.yml
-if [ "$USE_LETSENCRYPT" = "yes" ]; then
-  cp $configPth/piler-ssl.yml $installPth/docker-compose.yml
-else
-  cp $configPth/piler-default.yml $installPth/docker-compose.yml
+if [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
+then
+    cp "${configPth}/piler-ssl.yml" "${installPth}/docker-compose.yml"
+elif [[ "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
+then
+    cp "${configPth}/piler-ssl-no-mysql.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
+then
+    cp "${configPth}/piler-default.yml" "${installPth}/docker-compose.yml"
+elif [[ ! "${USE_LETSENCRYPT}" == "yes" ]] && [[ ! "${MYSQL_HOSTNAME}" == "mysql_piler" ]]
+then
+    cp "${configPth}/piler-default-no-mysql.yml" "${installPth}/docker-compose.yml"
 fi
 # Check for Patches before Update
 bash $installPth/patch.sh
