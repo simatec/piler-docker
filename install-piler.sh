@@ -78,25 +78,25 @@ done
 
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
-    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+    if docker compose version --short | grep "^[2-9]\." > /dev/null 2>&1; then
       COMPOSE_VERSION=native
       echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
       sleep 2
       echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2${normal}"
       exit 1
     fi
 elif docker-compose > /dev/null 2>&1; then
   if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
-    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+    if docker compose version --short | grep "^[2-9]\." > /dev/null 2>&1; then
       COMPOSE_VERSION=standalone
       echo -e "${purple}Found Docker Compose Standalone.${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
       sleep 2
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2${normal}"
       exit 1
     fi
   fi
