@@ -1,3 +1,5 @@
+name: piler-docker
+
 services:
   mysql:
     image: mariadb:${MARIA_DB_VERSION}
@@ -31,7 +33,7 @@ services:
       - ./piler.cnf:/etc/mysql/conf.d/piler.cnf:ro
 
   manticore:
-    image: manticoresearch/manticore:13.11.0
+    image: manticoresearch/manticore:29.9.0
     container_name: manticore_piler
     restart: unless-stopped
     networks:
@@ -47,7 +49,7 @@ services:
           memory: 512M
 
   memcached:
-    image: memcached:latest
+    image: memcached:1.6
     container_name: memcached_piler
     restart: unless-stopped
     networks:
@@ -57,7 +59,10 @@ services:
     command: -m 64
 
   piler:
-    image: simatec/piler:${PILER_VERSION}
+    image: piler-docker/piler:${PILER_VERSION}
+    build:
+      context: ./build
+    pull_policy: never
     container_name: piler
     restart: unless-stopped
     networks:
@@ -102,6 +107,7 @@ services:
       - memcached
       - mysql
       - manticore
+
 networks:
   pilernet:
     external: true

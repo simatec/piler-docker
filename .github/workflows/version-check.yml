@@ -1,0 +1,24 @@
+name: Version check
+
+# Weekly check for new versions Dependabot cannot detect (Piler package, MariaDB,
+# images in config/*.yml). Opens or updates one issue per component, see
+# .github/scripts/check_updates.py
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for new versions
+        run: python3 .github/scripts/check_updates.py
+        env:
+          GH_TOKEN: ${{ github.token }}

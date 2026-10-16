@@ -20,6 +20,9 @@ else
   	normal=`echo -en "\e[0m"`
 fi
 
+# Update Source
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/DSTech-IT/mailpiler-with-docker/main}"
+
 HLINE="================================================================"
 HLINE_SMALL="================================="
 
@@ -78,25 +81,25 @@ done
 
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
-    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=native
       echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
       sleep 2
       echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
 elif docker-compose > /dev/null 2>&1; then
   if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
-    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker-compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=standalone
       echo -e "${purple}Found Docker Compose Standalone.${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
       sleep 2
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
   fi
@@ -259,8 +262,7 @@ elif [ -f $installPth/.configDone ]; then
             for fileUpdate in update.sh README.md; do
                 echo "${purple}${HLINE}${HLINE_SMALL}"
                 echo "${purple}****** Download Update $fileUpdate ******"
-                #curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
-                wget https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate -O $installPth/$fileUpdate
+                wget $REPO_RAW_URL/$fileUpdate -O $installPth/$fileUpdate
                 echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
                 echo
             done
@@ -395,7 +397,7 @@ cat >> $etcPth/config-site.php <<EOF
 // CUSTOM
 \$config['PROVIDED_BY'] = '$PILER_DOMAIN';
 \$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
-\$config['COMPATIBILITY'] = '';
+\$config['LOGIN_EXTRA_NOTES'] = '';
 
 // fancy features.
 \$config['ENABLE_INSTANT_SEARCH'] = 1;
@@ -474,7 +476,7 @@ cat >> $etcPth/config-site.php <<EOF
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
 \$config['MAILCOW_SET_REALNAME'] = true;
 \$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default \$config['IMAP_HOST']
 include('auth-mailcow.php');
 // ### end added by Piler-Installer ###
 EOF
@@ -495,9 +497,11 @@ fi
 sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
 sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" $etcPth/piler.conf
 
+if ! grep -q "^queuedir=" $etcPth/piler.conf; then
 cat >> $etcPth/piler.conf <<EOF
 queuedir=/var/piler/store
 EOF
+fi
 
 # piler restart
 echo

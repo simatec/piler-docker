@@ -69,7 +69,7 @@ compare_versions() {
     local ver1=$(echo "$version1" | awk -F. '{ printf("%03d%03d%03d", $1, $2, $3); }')
     local ver2=$(echo "$version2" | awk -F. '{ printf("%03d%03d%03d", $1, $2, $3); }')
 
-    if [[ "$ver1" -ge "$ver2" ]]; then
+    if (( 10#$ver1 >= 10#$ver2 )); then
         return 0
     else
         return 1
@@ -125,7 +125,7 @@ cat >> $configSite <<EOF
 // CUSTOM
 \$config['PROVIDED_BY'] = '$PILER_DOMAIN';
 \$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
-\$config['COMPATIBILITY'] = '';
+\$config['LOGIN_EXTRA_NOTES'] = '';
 
 // fancy features.
 \$config['ENABLE_INSTANT_SEARCH'] = 1;
@@ -191,7 +191,7 @@ cat >> $configSite <<EOF
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
 \$config['MAILCOW_SET_REALNAME'] = true;
 \$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default \$config['IMAP_HOST']
 include('auth-mailcow.php');
 // ### end added by Piler-Installer ###
 EOF

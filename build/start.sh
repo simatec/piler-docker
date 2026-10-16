@@ -17,6 +17,8 @@ RT="${RT:-0}"
 MEMCACHED_HOSTNAME="${MEMCACHED_HOSTNAME:-memcached}"
 MANTICORE_HOSTNAME="${MANTICORE_HOSTNAME:-manticore}"
 TMP_CONF_DIR="/tmp/piler-conf"
+PILER_RUN_DIR="${VOLUME_DIR}/run"
+PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')"
 
 error() {
    echo "ERROR:" "$*" 1>&2
@@ -80,9 +82,14 @@ fix_configs() {
    [[ -f "$PILER_PEM" ]] || make_certificate "$PILER_PEM"
 
    [[ -f /etc/piler/MANTICORE ]] || touch /etc/piler/MANTICORE
-   for f in config-site.dist.php manticore.conf manticore.conf.dist piler-nginx.conf.dist piler.conf.dist; do
-      if [[ ! -f "/etc/piler/${f}" ]]; then cp "${TMP_CONF_DIR}/${f}" /etc/piler; fi
+
+   # The *.dist files always come from the current image, so an existing
+   # /etc/piler volume gets the templates of the installed piler version
+   for f in config-site.dist.php manticore.conf.dist piler-nginx.conf.dist piler.conf.dist; do
+      cp "${TMP_CONF_DIR}/${f}" "${CONFIG_DIR}/${f}"
    done
+
+   if [[ ! -f "$SPHINX_CONF" ]]; then cp "${TMP_CONF_DIR}/manticore.conf" "$SPHINX_CONF"; fi
 
    if [[ ! -f "$PILER_NGINX_CONF" ]]; then
       log "Writing ${PILER_NGINX_CONF}"
@@ -91,25 +98,37 @@ fix_configs() {
       sed -i "s%PILER_HOST%${PILER_HOSTNAME}%" "$PILER_NGINX_CONF"
    fi
 
+   # Point an existing nginx config to the php-fpm version of the current image
+   sed -i "s%unix:/run/php/php[0-9.]*-fpm.sock%unix:/run/php/php${PHP_VERSION}-fpm.sock%" "$PILER_NGINX_CONF"
+
    if [[ ! -f "$PILER_CONF" ]]; then
       log "Writing ${PILER_CONF}"
 
-      sed \
-         -e "s/mysqluser=.*/mysqluser=${MYSQL_USER}/g" \
-         -e "s/mysqldb=.*/mysqldb=${MYSQL_DATABASE}/g" \
-         -e "s/verystrongpassword/${MYSQL_PASSWORD}/g" \
-         -e "s/hostid=.*/hostid=${PILER_HOSTNAME}/g" \
-         -e "s/tls_enable=.*/tls_enable=1/g" \
-         -e "s/sphxhost=.*/sphxhost=${MANTICORE_HOSTNAME}/g" \
-         -e "s/rtindex=.*/rtindex=${RT}/g" \
-         -e "s/mysqlsocket=.*/mysqlsocket=/g" "${PILER_CONF}.dist" > "$PILER_CONF"
-
-      {
-         echo "mysqlhost=${MYSQL_HOSTNAME}"
-      } >> "$PILER_CONF"
-
-      give_it_to_piler "$PILER_CONF"
+      cp "${PILER_CONF}.dist" "$PILER_CONF"
    fi
+
+   if ! grep -q "^mysqlhost=" "$PILER_CONF"; then
+      echo "mysqlhost=${MYSQL_HOSTNAME}" >> "$PILER_CONF"
+   fi
+
+   log "Updating ${PILER_CONF}"
+
+   # Since piler 1.4.9 the pid files are written to /var/piler/run
+   # and the clamd_socket option has been removed
+   sed -i \
+      -e "s/mysqlhost=.*/mysqlhost=${MYSQL_HOSTNAME}/g" \
+      -e "s/mysqluser=.*/mysqluser=${MYSQL_USER}/g" \
+      -e "s/mysqldb=.*/mysqldb=${MYSQL_DATABASE}/g" \
+      -e "s/verystrongpassword/${MYSQL_PASSWORD}/g" \
+      -e "s/hostid=.*/hostid=${PILER_HOSTNAME}/g" \
+      -e "s/tls_enable=.*/tls_enable=1/g" \
+      -e "s/sphxhost=.*/sphxhost=${MANTICORE_HOSTNAME}/g" \
+      -e "s/rtindex=.*/rtindex=${RT}/g" \
+      -e "s%pidfile=.*%pidfile=${PILER_RUN_DIR}/piler.pid%g" \
+      -e "s/mysqlsocket=.*/mysqlsocket=/g" \
+      -e "/^clamd_socket=/d" "$PILER_CONF"
+
+   give_it_to_piler "$PILER_CONF"
 
    if [[ ! -f "$CONFIG_SITE_PHP" ]]; then
       log "Writing ${CONFIG_SITE_PHP}"
@@ -148,7 +167,7 @@ fix_configs() {
       if ! grep "'SPHINX_MAIN_INDEX'" "$CONFIG_SITE_PHP"; then
          echo "\$config['SPHINX_MAIN_INDEX'] = 'piler1';" >> "$CONFIG_SITE_PHP"
       fi
-fi
+   fi
 
    if ! grep "'SPHINX_HOSTNAME'" "$CONFIG_SITE_PHP"; then
       echo "\$config['SPHINX_HOSTNAME'] = '${MANTICORE_HOSTNAME}:9306';" >> "$CONFIG_SITE_PHP"
@@ -191,6 +210,10 @@ init_database() {
       mysql "--defaults-file=${PILER_MY_CNF}" "$MYSQL_DATABASE" < /usr/share/piler/db-mysql.sql
    else
       log "metadata table exists"
+
+      # Schema upgrade for piler 1.4.9: composite indexes used by the purge job
+      mysql "--defaults-file=${PILER_MY_CNF}" "$MYSQL_DATABASE" <<< \
+         "create index if not exists metadata_idx_purge on metadata(deleted, retained); create index if not exists metadata_idx_oldest on metadata(deleted, sent);"
    fi
 
    if [[ -v ADMIN_USER_PASSWORD_HASH ]]; then
@@ -210,7 +233,7 @@ create_my_cnf_files() {
 
 start_services() {
    service cron start
-   service php8.3-fpm start
+   service "php${PHP_VERSION}-fpm" start
    service nginx start
    rsyslogd
 }
@@ -218,7 +241,9 @@ start_services() {
 
 start_piler() {
    # No pid file should exist for piler
-   rm -f /var/run/piler/*pid
+   mkdir -p "$PILER_RUN_DIR"
+   chown "${PILER_USER}:${PILER_USER}" "$PILER_RUN_DIR"
+   rm -f "${PILER_RUN_DIR}"/*pid /var/run/piler/*pid
 
    /etc/init.d/rc.piler start
 }

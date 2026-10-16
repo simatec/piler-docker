@@ -20,6 +20,9 @@ else
   normal=`echo -en "\e[0m"`
 fi
 
+# Update Source
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/DSTech-IT/mailpiler-with-docker/main}"
+
 HLINE="================================================================"
 HLINE_SMALL="================================="
 
@@ -104,25 +107,25 @@ done
 
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
-    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=native
       echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
       sleep 2
       echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
 elif docker-compose > /dev/null 2>&1; then
   if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
-    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker-compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=standalone
       echo -e "${purple}Found Docker Compose Standalone.${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
       sleep 2
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
   fi
@@ -175,8 +178,7 @@ for ymlUpdate in piler-default.yml piler-ssl.yml; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $ymlUpdate ******"
-  #curl -o $configPth/$ymlUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate
-  wget https://raw.githubusercontent.com/simatec/piler-docker/main/config/$ymlUpdate -O $configPth/$ymlUpdate
+  wget $REPO_RAW_URL/config/$ymlUpdate -O $configPth/$ymlUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done
@@ -185,18 +187,29 @@ for fileUpdate in install-piler.sh LICENSE piler.conf.example patch.sh; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $fileUpdate ******"
-  #curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
-  wget https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate -O $installPth/$fileUpdate
+  wget $REPO_RAW_URL/$fileUpdate -O $installPth/$fileUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
+done
+
+# Config files for the manticore and mysql containers are only downloaded if missing,
+# so that local changes (e.g. charset_table) are kept
+for confUpdate in manticore.conf piler.cnf; do
+  if [ ! -f $installPth/$confUpdate ]; then
+    echo
+    echo "${purple}${HLINE}${HLINE_SMALL}"
+    echo "${purple}****** Download $confUpdate ******"
+    wget $REPO_RAW_URL/$confUpdate -O $installPth/$confUpdate
+    echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
+    echo
+  fi
 done
 
 for buildUpdate in start.sh build.sh Dockerfile build.conf; do
   echo
   echo "${purple}${HLINE}${HLINE_SMALL}"
   echo "${purple}****** Download Update $buildUpdate ******"
-  #curl -o $buildPth/$buildUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate
-  wget https://raw.githubusercontent.com/simatec/piler-docker/main/build/$buildUpdate -O $buildPth/$buildUpdate
+  wget $REPO_RAW_URL/build/$buildUpdate -O $buildPth/$buildUpdate
   echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
   echo
 done

@@ -1,6 +1,8 @@
+name: piler-docker
+
 services:
   nginx-proxy:
-    image: jwilder/nginx-proxy
+    image: nginxproxy/nginx-proxy:1.11
     container_name: nginx-proxy
     restart: unless-stopped
     networks:
@@ -15,7 +17,7 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
 
   nginx-letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
+    image: nginxproxy/acme-companion:2.8
     container_name: nginx-letsencrypt
     restart: unless-stopped
     networks:
@@ -24,6 +26,7 @@ services:
       - nginx-proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./nginx-data/acme:/etc/acme.sh
     environment:
       - DEFAULT_EMAIL=${LETSENCRYPT_EMAIL}
 
@@ -59,7 +62,7 @@ services:
       - ./piler.cnf:/etc/mysql/conf.d/piler.cnf:ro
 
   manticore:
-    image: manticoresearch/manticore:13.11.0
+    image: manticoresearch/manticore:29.9.0
     container_name: manticore_piler
     networks:
       - pilernet
@@ -75,7 +78,7 @@ services:
           memory: 512M
 
   memcached:
-    image: memcached:latest
+    image: memcached:1.6
     container_name: memcached_piler
     restart: unless-stopped
     networks:
@@ -85,7 +88,10 @@ services:
     command: -m 64
 
   piler:
-    image: simatec/piler:${PILER_VERSION}
+    image: piler-docker/piler:${PILER_VERSION}
+    build:
+      context: ./build
+    pull_policy: never
     container_name: piler
     restart: unless-stopped
     networks:

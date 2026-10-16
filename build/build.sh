@@ -1,37 +1,20 @@
 #!/bin/bash
 
-# Path Settings
-buildPth=`pwd`
-
-cd $buildPth
-
-# chmod start.sh
-chmod a+x start.sh
-
-# build config load
-. ./build.conf
-
-# set Piler Version
-#sed -i 's/PILER_VERSION=.*/PILER_VERSION="'$PILER_VERSION'"/g' ../piler.conf
-
-# set Maria-DB Version
-#sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ../piler.conf
-
-
-# Package Download
-rm -f $buildPth/*.deb
-
-wget https://github.com/jsuto/piler/releases/download/piler-$PILER_VERSION/$PILER_PACKAGE -O $PILER_PACKAGE
-
 set -o errexit
 set -o pipefail
 set -o nounset
 
-IMAGE_NAME="simatec/piler:$PILER_VERSION"
+# Path Settings
+buildPth="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ ! -f $buildPth/$PILER_PACKAGE ]; then 
-    echo "ERROR: missing package name" 1>&2; exit 1; 
-fi
+cd "$buildPth"
 
-docker buildx build --load --build-arg PACKAGE="$PILER_PACKAGE" -t "$IMAGE_NAME" .
+# build config load
+. ./build.conf
+
+# The Piler package is downloaded and verified inside the Dockerfile.
+# Same image name as used in config/piler-default.yml and config/piler-ssl.yml
+IMAGE_NAME="${IMAGE_NAME:-piler-docker/piler:$PILER_VERSION}"
+
+docker buildx build --load -t "$IMAGE_NAME" .
 exit 0
