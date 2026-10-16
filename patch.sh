@@ -191,7 +191,7 @@ cat >> $configSite <<EOF
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
 \$config['MAILCOW_SET_REALNAME'] = true;
 \$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
+\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default \$config['IMAP_HOST']
 include('auth-mailcow.php');
 // ### end added by Piler-Installer ###
 EOF
