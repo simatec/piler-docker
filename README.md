@@ -138,6 +138,61 @@ docker system prune
 
 **********************************************************************************************************
 
+### Migration from simatec/piler-docker
+
+Installations of the original project [simatec/piler-docker](https://github.com/simatec/piler-docker)
+(e.g. Piler 1.4.8) can not be updated with the menu above, because their `install-piler.sh`
+still downloads the update from simatec. The script `migrate-from-simatec.sh` switches an
+existing installation to this repository and updates it in one step.
+
+Run the following command as root in the install directory:
+
+```
+cd /opt/piler-docker && wget -O migrate-from-simatec.sh https://raw.githubusercontent.com/DSTech-IT/mailpiler-with-docker/main/migrate-from-simatec.sh && bash migrate-from-simatec.sh
+```
+
+> The script asks questions, so it has to be downloaded first and can not be run with `curl ... | bash`.
+
+The script
+
+* checks the installation (root, Docker Compose v2 or higher, volumes of the compose project `piler-docker`, free disk space)
+* asks once at the beginning whether the migration and a reindex should be performed, afterwards it runs without further input
+* creates a backup in `/root/piler-backup-<date>`: database dump, install directory and docker volumes, plus a `restore.sh` for a rollback
+* replaces `install-piler.sh`, `update.sh` and `README.md` with the versions from this repository (the old installer is kept as `install-piler.sh.simatec`)
+* runs the regular update (local image build, automatic MariaDB upgrade, config migration)
+* checks the result (container health, piler image and package version, MariaDB version, update source)
+
+The Piler is stopped during backup and update, so no mails are received in this time.
+
+Optional settings via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BACKUP_DIR` | `/root/piler-backup-<date>` | Backup location (must not be inside the install directory) |
+| `BACKUP_STORE` | `no` | `yes` also backs up the mail store volume, which can be very large. The update does not touch the mail store. |
+| `INSTALL_DIR` | current directory | Install directory |
+
+Example: `BACKUP_DIR=/mnt/backup/piler BACKUP_STORE=yes bash migrate-from-simatec.sh`
+
+After the migration, check in the web interface that the login works, old mails are found and new
+mails are archived. A rollback to the previous version is possible as long as the old image
+`simatec/piler:1.4.8` has not been removed:
+
+```
+bash /root/piler-backup-<date>/restore.sh
+```
+
+If everything works, the old image can be removed:
+
+```
+docker image rm simatec/piler:1.4.8
+docker system prune
+```
+
+Future updates are done as usual via `bash install-piler.sh` and `2) Update-Piler`.
+
+**********************************************************************************************************
+
 ### Using the Piler on the command line
 
 For use on the command line, we first log into the container.
@@ -172,6 +227,10 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### 1.2.0 (21.10.2026)
+* (DSTech-IT) Migration script `migrate-from-simatec.sh` for existing simatec/piler-docker installations
+* (DSTech-IT) Fix update.sh: stop the containers before the old docker-compose.yml is removed
 
 ### 1.1.0 (24.09.2026)
 * (DSTech-IT) Update to Piler 1.4.9

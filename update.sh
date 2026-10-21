@@ -162,6 +162,15 @@ else
   rm $installPth/.update
 fi
 
+# old docker stop (before the docker-compose.yml is removed)
+cd $installPth
+
+if [ $COMPOSE_VERSION = native ]; then
+  docker compose down
+else
+  docker-compose down
+fi
+
 if [ -f $installPth/docker-compose.yml ]; then
   rm $installPth/docker-compose.yml
 fi
@@ -228,15 +237,6 @@ sed -i 's/MARIA_DB_VERSION=.*/MARIA_DB_VERSION="'$MARIA_DB_VERSION'"/g' ./piler.
 
 if [ ! -f $installPth/.env ]; then
   ln -s ./piler.conf .env
-fi
-
-# old docker stop
-cd $installPth
-
-if [ $COMPOSE_VERSION = native ]; then
-  docker compose down
-else
-  docker-compose down
 fi
 
 # create Network
