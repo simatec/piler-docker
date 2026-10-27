@@ -1,5 +1,6 @@
 # piler-docker
 
+[![CI](https://github.com/simatec/piler-docker/actions/workflows/ci.yml/badge.svg)](https://github.com/simatec/piler-docker/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/simatec/piler-docker?style=flat)](https://github.com/simatec/piler-docker/blob/master/LICENSE)
 [![Donate](https://img.shields.io/badge/paypal-donate%20|%20spenden-blue.svg)](https://paypal.me/mk1676)
 
@@ -23,9 +24,24 @@ https://www.mailpiler.org/ or https://github.com/jsuto/piler
 
 *******************************************************************************************************
 
-### DockerHub
+### Piler Image
 
-https://hub.docker.com/r/simatec/piler
+The Piler image is built locally from `build/Dockerfile` when the containers are started
+(`docker compose up`). The Dockerfile downloads the official Piler package from
+https://github.com/jsuto/piler/releases and verifies its SHA256 checksum.
+
+The image can also be built manually with `bash build/build.sh`.
+
+Current versions:
+
+| Component | Version |
+|-----------|---------|
+| Piler | 1.4.9 |
+| Base image | Ubuntu 26.04 (resolute), PHP 8.5 |
+| MariaDB | 12.3.3 (LTS) |
+| Manticore Search | 29.9.0 |
+| Memcached | 1.6 |
+| nginx-proxy / acme-companion (Let's Encrypt) | 1.11 / 2.8 |
 
 *******************************************************************************************************
 
@@ -45,14 +61,10 @@ curl -sSL https://get.docker.com/ | CHANNEL=stable sh
 systemctl enable --now docker
 ```
 
-* Install Docker-Compose
+* Docker Compose
 
-```
-curl -L https://github.com/docker/compose/releases/download/v$(curl -Ls https://www.servercow.de/docker-compose/latest.php)/docker-compose-$(uname -s)-$(uname -m) > /usr/local/bin/docker-compose
-```
-```
-chmod +x /usr/local/bin/docker-compose
-```
+The Docker installation above already includes the Docker Compose plugin (`docker compose`).
+Docker Compose v2 or higher is required.
 
 * reboot your system
 
@@ -91,6 +103,13 @@ The Default Login is `admin@local` and the Password ist `pilerrocks`
 
 > After installation, any changes can be made in piler.conf at any time and the install script can then be run again.
 
+* Mailcow
+
+With `USE_MAILCOW=true` Piler uses its built-in Mailcow support: after the IMAP login it reads the aliases
+and the name of the mailbox from the Mailcow API over HTTPS. A read-only API key is enough.
+If your Mailcow uses a self-signed certificate, set `MAILCOW_SSL_VERIFY=false` in `piler.conf` and restart
+Piler with `docker compose up -d` in the install directory.
+
 
 **********************************************************************************************************
 
@@ -110,6 +129,13 @@ You will get a selection menu with the following options:
 1) Install-Piler
 2) Update-Piler
 ```
+
+The update files are downloaded from `https://raw.githubusercontent.com/simatec/piler-docker/main`.
+Another source can be set with the environment variable `REPO_RAW_URL`.
+
+During the update the Piler image is rebuilt locally. Configuration changes required by a new
+Piler version (e.g. php-fpm socket in `piler-nginx.conf`, pid file location, database indexes)
+are applied automatically when the Piler container starts.
 
 * After a successful update, unused container images can be removed from the system with the following command:
 
@@ -153,6 +179,25 @@ To leave the container on the console you have to execute 2x `exit`.
 **********************************************************************************************************
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+* (DSTech-IT) Update to Piler 1.4.9
+* (DSTech-IT) Base image Ubuntu 26.04 (resolute) with PHP 8.5, pinned by digest
+* (DSTech-IT) Update MariaDB to 12.3.3 (LTS), Manticore Search to 29.9.0, Memcached to 1.6
+* (DSTech-IT) Let's Encrypt: nginxproxy/nginx-proxy 1.11 and nginxproxy/acme-companion 2.8
+* (DSTech-IT) Piler image is built locally, package download with SHA256 check (amd64 and arm64)
+* (DSTech-IT) Piler image: install all available Ubuntu updates during the build (apt-get upgrade)
+* (DSTech-IT) Automatic migration of existing configs on container start (php-fpm socket, pid file, DB indexes)
+* (DSTech-IT) Fixed compose project name (piler-docker), independent of the install directory
+* (DSTech-IT) Support for Docker Compose v5 in install and update scripts
+* (DSTech-IT) Fix update.sh: stop the containers before the old docker-compose.yml is removed
+* (DSTech-IT) update.sh rebuilds the Piler image without cache and pulls new releases of the other images
+* (DSTech-IT) Fix version check in patch.sh
+* (DSTech-IT) Fix Mailcow login (HTTP 500): the built-in Mailcow lookup of Piler 1.4.9 uses `ENABLE_SSL_VERIFY`, which piler's config.php does not define. The Piler container now always sets it in config-site.php
+* (DSTech-IT) Security: `MAILCOW_HOST` now starts with `https://`, otherwise the built-in Mailcow lookup sends the Mailcow API key over plain HTTP
+* (DSTech-IT) Mailcow: use the built-in Mailcow support of Piler instead of `auth-mailcow.php` (patschi/mailpiler-mailcow-integration), which no longer works with Piler 1.4.9. Existing installations are switched on container start
+* (DSTech-IT) New option `MAILCOW_SSL_VERIFY` in piler.conf (default `true`), set it to `false` for a self-signed Mailcow certificate
+* (DSTech-IT) CI checks, Dependabot and a weekly check for new Piler, MariaDB and image versions
 
 ### 1.0.0 (24.11.2025)
 * (simatec) Update to Piler 1.4.8

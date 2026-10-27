@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ShellCheck
+        run: |
+          shellcheck --version
+          shellcheck --severity=error ./*.sh build/*.sh
+
+      - name: Python syntax
+        run: python3 -m py_compile .github/scripts/check_updates.py
+
+      - name: Hadolint
+        run: docker run --rm -i hadolint/hadolint:v2.12.0 hadolint --failure-threshold error - < build/Dockerfile
+
+      - name: Check version consistency
+        run: |
+          . build/build.conf
+          dockerfile_version=$(sed -n 's/^ARG PILER_VERSION="\(.*\)"/\1/p' build/Dockerfile)
+          example_piler=$(sed -n 's/^PILER_VERSION="\(.*\)"/\1/p' piler.conf.example)
+          example_maria=$(sed -n 's/^MARIA_DB_VERSION="\(.*\)"/\1/p' piler.conf.example)
+          rc=0
+          [ "$PILER_VERSION" = "$dockerfile_version" ] || { echo "::error file=build/Dockerfile::PILER_VERSION $dockerfile_version != $PILER_VERSION (build/build.conf)"; rc=1; }
+          [ "$PILER_VERSION" = "$example_piler" ] || { echo "::error file=piler.conf.example::PILER_VERSION $example_piler != $PILER_VERSION (build/build.conf)"; rc=1; }
+          [ "$MARIA_DB_VERSION" = "$example_maria" ] || { echo "::error file=piler.conf.example::MARIA_DB_VERSION $example_maria != $MARIA_DB_VERSION (build/build.conf)"; rc=1; }
+          exit $rc
+
+      - name: Validate compose files
+        run: |
+          for f in config/piler-default.yml config/piler-ssl.yml; do
+            echo "Validating $f"
+            docker compose --project-directory . --env-file piler.conf.example -f "$f" config --quiet
+          done
+
+  build:
+    name: Build image (${{ matrix.arch }})
+    # Native runner per architecture, no QEMU emulation (arm64 runners are free for public repos)
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: build
+          platforms: linux/${{ matrix.arch }}
+          load: true
+          push: false
+          tags: piler-docker/piler:ci
+          cache-from: type=gha,scope=${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
+
+      - name: Smoke test
+        run: |
+          docker run --rm --platform linux/${{ matrix.arch }} piler-docker/piler:ci \
+            sh -c 'dpkg-query -W piler && command -v piler && php --version | head -n 1 && nginx -v'
