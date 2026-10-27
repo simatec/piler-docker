@@ -290,10 +290,17 @@ if [ "$USE_LETSENCRYPT" = "yes" ]; then
     fi
 fi
 
+# Rebuild the Piler image without cache, so that security updates of the Ubuntu
+# packages (e.g. PHP) are installed even if the Dockerfile has not changed, and
+# pull new releases of the other images (patch updates under the same tag)
 if [ $COMPOSE_VERSION = native ]; then
-  docker compose up --force-recreate --build -d
+  docker compose build --no-cache
+  docker compose pull --ignore-buildable
+  docker compose up --force-recreate -d
 else
-  docker-compose up --force-recreate --build -d
+  docker-compose build --no-cache
+  docker-compose pull --ignore-buildable
+  docker-compose up --force-recreate -d
 fi
 
 echo

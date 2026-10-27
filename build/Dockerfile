@@ -30,6 +30,7 @@ RUN case "${TARGETARCH}" in \
     echo "${PILER_SHA256}  /tmp/piler.deb" | sha256sum -c - && \
     userdel -r ubuntu && \
     apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
        wget openssl sysstat catdoc unrtf poppler-utils nginx tnef sudo libtre5 cron ca-certificates curl rsyslog gnupg mariadb-client-core python3 python3-mysqldb libzip5 \
        php-cli php-cgi php-mysql php-fpm php-zip php-ldap php-gd php-curl php-xml php-memcached && \
