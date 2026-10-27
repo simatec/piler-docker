@@ -228,9 +228,12 @@ To leave the container on the console you have to execute 2x `exit`.
 
 ## Changelog
 
-### 1.2.0 (21.10.2026)
+### 1.2.0 (27.10.2026)
 * (DSTech-IT) Migration script `migrate-from-simatec.sh` for existing simatec/piler-docker installations
 * (DSTech-IT) Fix update.sh: stop the containers before the old docker-compose.yml is removed
+* (DSTech-IT) Base image Ubuntu 26.04 pinned by digest and updated to the current rebuild with security updates
+* (DSTech-IT) Fix Mailcow comment in config-site.php written by install-piler.sh and patch.sh
+* (DSTech-IT) CI checks, Dependabot and a weekly check for new Piler, MariaDB and image versions
 
 ### 1.1.0 (24.09.2026)
 * (DSTech-IT) Update to Piler 1.4.9

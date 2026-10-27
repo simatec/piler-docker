@@ -8,6 +8,8 @@ Covered:
 
 One issue (label "version-check") is kept per component: it is created when an update
 is found, updated when an even newer version appears and closed once the repo is current.
+If issues are disabled for the repository, the updates are listed in the job summary
+instead and the run fails while an update is pending.
 
 Usage: check_updates.py [--dry-run]   (needs the gh CLI and GH_TOKEN unless --dry-run)
 """
@@ -157,16 +159,38 @@ def check_image(image, tag, files):
 
 
 def gh(*args):
-    return subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
+    proc = subprocess.run(["gh", *args], capture_output=True, text=True)
+    if proc.returncode:
+        raise RuntimeError(f"gh {' '.join(args[:2])} failed: {proc.stderr.strip()}")
+    return proc.stdout
+
+
+def report_summary(results):
+    """Fallback without issues: list the updates in the job summary. Returns True if there are any."""
+    updates = [r for r in results if r[2]]
+    text = "\n".join(f"## {c}: {cur} → {latest}\n\n{body}\n" for c, cur, latest, body in updates)
+    print(text or "All components are up to date.")
+    if updates and os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+            f.write(text)
+    for component, current, latest, _ in updates:
+        print(f"::error::Update available: {component} {current} → {latest} (details in the job summary)", file=sys.stderr)
+    return bool(updates)
 
 
 def report(results, dry_run):
+    """Report the results. Returns True if updates are pending that could not be filed as issues."""
     if dry_run:
         for component, current, latest, body in results:
             print(f"\n=== {component}: {current} -> {latest or 'up to date'}")
             if body:
                 print(body)
-        return
+        return False
+
+    if gh("api", "repos/{owner}/{repo}", "--jq", ".has_issues").strip() != "true":
+        print("::notice::Issues are disabled for this repository (Settings → General → Features → Issues), "
+              "reporting in the job summary instead", file=sys.stderr)
+        return report_summary(results)
 
     gh("label", "create", LABEL, "--color", "0366d6", "--description", "New upstream version available", "--force")
     open_issues = json.loads(gh("issue", "list", "--label", LABEL, "--state", "open", "--json", "number,title", "--limit", "200"))
@@ -188,6 +212,7 @@ def report(results, dry_run):
             gh("issue", "close", str(issue["number"]), "--comment", f"{component} is up to date ({current}).")
         else:
             print(f"{component}: up to date ({current})")
+    return False
 
 
 def main():
@@ -206,8 +231,8 @@ def main():
             failed = True
             print(f"::error::{name}: version check failed: {exc}", file=sys.stderr)
 
-    report(results, opts.dry_run)
-    return 1 if failed else 0
+    pending = report(results, opts.dry_run)
+    return 1 if failed or pending else 0
 
 
 if __name__ == "__main__":

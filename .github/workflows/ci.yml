@@ -18,7 +18,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: ShellCheck
         run: |
@@ -52,21 +52,23 @@ jobs:
 
   build:
     name: Build image (${{ matrix.arch }})
-    runs-on: ubuntu-latest
+    # Native runner per architecture, no QEMU emulation (arm64 runners are free for public repos)
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-qemu-action@v3
-        if: matrix.arch != 'amd64'
-
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: build
           platforms: linux/${{ matrix.arch }}
