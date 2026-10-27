@@ -63,6 +63,10 @@ MAILCOW_APIKEY="your_Mailcow_API-Key"
 
 MAILCOW_HOST="mail.example.com"
 
+# Verify the TLS certificate of Mailcow (set "false" only for a self-signed certificate)
+
+MAILCOW_SSL_VERIFY=true
+
 # Import Interval Settings
 
 AUTO_IMPORT=false
@@ -71,8 +75,8 @@ AUTO_IMPORT=false
 
 # Piler Version
 
-PILER_VERSION="1.4.8"
+PILER_VERSION="1.4.9"
 
 # MariaDB Version
 
-MARIA_DB_VERSION="12.0.2"
+MARIA_DB_VERSION="12.3.3"

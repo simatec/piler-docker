@@ -20,6 +20,9 @@ else
   	normal=`echo -en "\e[0m"`
 fi
 
+# Update Source
+REPO_RAW_URL="${REPO_RAW_URL:-https://raw.githubusercontent.com/simatec/piler-docker/main}"
+
 HLINE="================================================================"
 HLINE_SMALL="================================="
 
@@ -78,25 +81,25 @@ done
 
 # Docker-Compose Check
 if docker compose > /dev/null 2>&1; then
-    if docker compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=native
       echo -e "${purple}Found Docker Compose Plugin (native).${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to native${normal}"
       sleep 2
       echo -e "${purple}Notice: You´ll have to update this Compose Version via your Package Manager manually!${normal}"
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
 elif docker-compose > /dev/null 2>&1; then
   if ! [[ $(alias docker-compose 2> /dev/null) ]] ; then
-    if docker-compose version --short | grep "^2." > /dev/null 2>&1; then
+    if [ "$(docker-compose version --short 2>/dev/null | sed 's/^v//' | cut -d. -f1)" -ge 2 ] 2>/dev/null; then
       COMPOSE_VERSION=standalone
       echo -e "${purple}Found Docker Compose Standalone.${normal}"
       echo -e "${purple}Setting the DOCKER_COMPOSE_VERSION Variable to standalone${normal}"
       sleep 2
     else
-      echo -e "${redBold}Cannot find Docker Compose with a Version Higher than 2.X.X.${normal}"
+      echo -e "${redBold}Cannot find Docker Compose with Version 2.X.X or higher.${normal}"
       exit 1
     fi
   fi
@@ -219,6 +222,19 @@ if [ ! -f $installPth/.configDone ]; then
         read -ep "Please set your Mailcow Host Domain (Enter for default: $imapServer): " mailcowHost
         mailcowHost=${mailcowHost:=$imapServer}
         sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
+
+        # Mailcow TLS certificate check
+        if ! grep -q "^MAILCOW_SSL_VERIFY=" ./piler.conf; then
+            echo "MAILCOW_SSL_VERIFY=true" >> ./piler.conf
+        fi
+        while true; do
+            read -ep "Does your Mailcow use a self-signed certificate? (y/N): " jn
+            case $jn in
+                [Yy]* ) sed -i 's/MAILCOW_SSL_VERIFY=.*/MAILCOW_SSL_VERIFY=false/g' ./piler.conf; break;;
+                [Nn]* | "" ) sed -i 's/MAILCOW_SSL_VERIFY=.*/MAILCOW_SSL_VERIFY=true/g' ./piler.conf; break;;
+                * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+            esac
+        done
     fi
 
     # Import Interval Settings 
@@ -259,8 +275,7 @@ elif [ -f $installPth/.configDone ]; then
             for fileUpdate in update.sh README.md; do
                 echo "${purple}${HLINE}${HLINE_SMALL}"
                 echo "${purple}****** Download Update $fileUpdate ******"
-                #curl -o $installPth/$fileUpdate https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate
-                wget https://raw.githubusercontent.com/simatec/piler-docker/main/$fileUpdate -O $installPth/$fileUpdate
+                wget $REPO_RAW_URL/$fileUpdate -O $installPth/$fileUpdate
                 echo "${purple}${HLINE}${HLINE_SMALL}${normal}"
                 echo
             done
@@ -395,7 +410,7 @@ cat >> $etcPth/config-site.php <<EOF
 // CUSTOM
 \$config['PROVIDED_BY'] = '$PILER_DOMAIN';
 \$config['SUPPORT_LINK'] = 'mailto:$SUPPORT_MAIL';
-\$config['COMPATIBILITY'] = '';
+\$config['LOGIN_EXTRA_NOTES'] = '';
 
 // fancy features.
 \$config['ENABLE_INSTANT_SEARCH'] = 1;
@@ -467,20 +482,20 @@ echo "set Mailcow Api-Key config"
 echo "${blue}${HLINE}${normal}"
 echo
 
+# Piler adds the API path to MAILCOW_HOST, so it must start with https://
+mailcowHostName="${MAILCOW_HOST#*://}"
+mailcowHostName="${mailcowHostName%%/*}"
+
 cat >> $etcPth/config-site.php <<EOF
 
 // ### Begin added by Piler-Installer ###
-// Mailcow API
+// Mailcow API (built-in Mailcow support of Piler)
+// ENABLE_SSL_VERIFY is set by the Piler container from MAILCOW_SSL_VERIFY in piler.conf
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
-\$config['MAILCOW_SET_REALNAME'] = true;
-\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default $config['IMAP_HOST']
-include('auth-mailcow.php');
+\$config['MAILCOW_HOST'] = 'https://$mailcowHostName';
 // ### end added by Piler-Installer ###
 EOF
 
-#curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
-wget https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php -O $etcPth/auth-mailcow.php
 fi
 
 # add config settings
@@ -495,9 +510,11 @@ fi
 sed -i "s/default_retention_days=.*/default_retention_days=$DEFAULT_RETENTION_DAYS/" $etcPth/piler.conf
 sed -i "s/update_counters_to_memcached=.*/update_counters_to_memcached=1/" $etcPth/piler.conf
 
+if ! grep -q "^queuedir=" $etcPth/piler.conf; then
 cat >> $etcPth/piler.conf <<EOF
 queuedir=/var/piler/store
 EOF
+fi
 
 # piler restart
 echo
