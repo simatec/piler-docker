@@ -79,6 +79,7 @@ services:
       - PILER_HOSTNAME=${PILER_DOMAIN}
       - TZ=${TIME_ZONE}
       - RT=1
+      - MAILCOW_SSL_VERIFY=${MAILCOW_SSL_VERIFY:-true}
     ports:
       - "25:25"
       - "80:80"

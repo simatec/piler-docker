@@ -177,6 +177,8 @@ fix_configs() {
       echo "\$config['SPHINX_HOSTNAME_READONLY'] = '${MANTICORE_HOSTNAME}:9307';" >> "$CONFIG_SITE_PHP"
    fi
 
+   fix_mailcow_config
+
    # Fix for PATH_PREFIX
    if [[ -v PATH_PREFIX ]];
      then
@@ -184,6 +186,42 @@ fix_configs() {
        sed -i -e "s#location.origin\ +\ .*#location.origin\ +\ $PATH_PREFIX,#" /var/piler/www/assets/js/piler.js
        sed -i -e "s#^\$config\['PATH_PREFIX'\].*#\$config\['PATH_PREFIX'\] = '$PATH_PREFIX';#" "$CONFIG_SITE_PHP"
    fi
+}
+
+
+fix_mailcow_config() {
+   local ssl_verify=true
+
+   # The built-in Mailcow lookup of Piler 1.4.9 uses ENABLE_SSL_VERIFY, which config.php
+   # does not define. PHP 8 aborts on the undefined constant and the login ends in an HTTP 500.
+   if [[ "${MAILCOW_SSL_VERIFY:-true}" == "false" ]]; then
+      ssl_verify=false
+   fi
+
+   if grep -q "'ENABLE_SSL_VERIFY'" "$CONFIG_SITE_PHP"; then
+      sed -i "s/^\\\$config\\['ENABLE_SSL_VERIFY'\\].*/\\\$config['ENABLE_SSL_VERIFY'] = ${ssl_verify};/" "$CONFIG_SITE_PHP"
+   else
+      echo "\$config['ENABLE_SSL_VERIFY'] = ${ssl_verify};" >> "$CONFIG_SITE_PHP"
+   fi
+
+   # Up to 1.2.1 the installer added auth-mailcow.php (patschi/mailpiler-mailcow-integration).
+   # It no longer works with Piler 1.4.9, and its MAILCOW_HOST without https:// made the
+   # built-in lookup send the API key over plain HTTP. Switch to the built-in lookup over HTTPS.
+   if grep -q "^include('auth-mailcow.php');" "$CONFIG_SITE_PHP"; then
+      log "Switching ${CONFIG_SITE_PHP} to the built-in Mailcow support"
+
+      sed -i -E \
+         -e "/^include\('auth-mailcow.php'\);/d" \
+         -e "/^\\\$config\['CUSTOM_EMAIL_QUERY_FUNCTION'\] = 'query_mailcow_for_email_access';/d" \
+         -e "/^\\\$config\['MAILCOW_SET_REALNAME'\]/d" \
+         -e "s#^// Mailcow API\$#// Mailcow API (built-in Mailcow support of Piler)#" \
+         "$CONFIG_SITE_PHP"
+
+      rm -f "${CONFIG_DIR}/auth-mailcow.php"
+   fi
+
+   # Piler adds the API path to MAILCOW_HOST, so it must start with https://
+   sed -i -E "s#^(\\\$config\['MAILCOW_HOST'\] = ')(https?://)?([^'/]+)[^']*'.*#\\1https://\\3';#" "$CONFIG_SITE_PHP"
 }
 
 

@@ -112,7 +112,6 @@ fi
 
 ################################ Patch config-site-php ################################
 configSite="/var/lib/docker/volumes/piler-docker_piler_etc/_data/config-site.php"
-etcPth="/var/lib/docker/volumes/piler-docker_piler_etc/_data"
 
 if ! grep -qF "### Begin added by Piler-Installer ###" "$configSite"; then
 cat >> $configSite <<EOF
@@ -183,21 +182,21 @@ fi
 
 if [ "$USE_MAILCOW" = true ]; then
 
+# Piler adds the API path to MAILCOW_HOST, so it must start with https://
+mailcowHostName="${MAILCOW_HOST#*://}"
+mailcowHostName="${mailcowHostName%%/*}"
+
 if ! grep -qF "// Mailcow API" "$configSite"; then
 cat >> $configSite <<EOF
 
 // ### Begin added by Piler-Installer ###
-// Mailcow API
+// Mailcow API (built-in Mailcow support of Piler)
+// ENABLE_SSL_VERIFY is set by the Piler container from MAILCOW_SSL_VERIFY in piler.conf
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
-\$config['MAILCOW_SET_REALNAME'] = true;
-\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default \$config['IMAP_HOST']
-include('auth-mailcow.php');
+\$config['MAILCOW_HOST'] = 'https://$mailcowHostName';
 // ### end added by Piler-Installer ###
 EOF
 fi
-
-wget https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php -O $etcPth/auth-mailcow.php
 fi
 
 echo "Patch Mailcow Api-Key config"

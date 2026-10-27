@@ -222,6 +222,19 @@ if [ ! -f $installPth/.configDone ]; then
         read -ep "Please set your Mailcow Host Domain (Enter for default: $imapServer): " mailcowHost
         mailcowHost=${mailcowHost:=$imapServer}
         sed -i 's/MAILCOW_HOST=.*/MAILCOW_HOST="'$mailcowHost'"/g' ./piler.conf
+
+        # Mailcow TLS certificate check
+        if ! grep -q "^MAILCOW_SSL_VERIFY=" ./piler.conf; then
+            echo "MAILCOW_SSL_VERIFY=true" >> ./piler.conf
+        fi
+        while true; do
+            read -ep "Does your Mailcow use a self-signed certificate? (y/N): " jn
+            case $jn in
+                [Yy]* ) sed -i 's/MAILCOW_SSL_VERIFY=.*/MAILCOW_SSL_VERIFY=false/g' ./piler.conf; break;;
+                [Nn]* | "" ) sed -i 's/MAILCOW_SSL_VERIFY=.*/MAILCOW_SSL_VERIFY=true/g' ./piler.conf; break;;
+                * ) echo -e "${redBold} Please confirm with Y or N.${normal}";;
+            esac
+        done
     fi
 
     # Import Interval Settings 
@@ -469,20 +482,20 @@ echo "set Mailcow Api-Key config"
 echo "${blue}${HLINE}${normal}"
 echo
 
+# Piler adds the API path to MAILCOW_HOST, so it must start with https://
+mailcowHostName="${MAILCOW_HOST#*://}"
+mailcowHostName="${mailcowHostName%%/*}"
+
 cat >> $etcPth/config-site.php <<EOF
 
 // ### Begin added by Piler-Installer ###
-// Mailcow API
+// Mailcow API (built-in Mailcow support of Piler)
+// ENABLE_SSL_VERIFY is set by the Piler container from MAILCOW_SSL_VERIFY in piler.conf
 \$config['MAILCOW_API_KEY'] = '$MAILCOW_APIKEY';
-\$config['MAILCOW_SET_REALNAME'] = true;
-\$config['CUSTOM_EMAIL_QUERY_FUNCTION'] = 'query_mailcow_for_email_access';
-\$config['MAILCOW_HOST'] = '$MAILCOW_HOST'; // default \$config['IMAP_HOST']
-include('auth-mailcow.php');
+\$config['MAILCOW_HOST'] = 'https://$mailcowHostName';
 // ### end added by Piler-Installer ###
 EOF
 
-#curl -o $etcPth/auth-mailcow.php https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php
-wget https://raw.githubusercontent.com/patschi/mailpiler-mailcow-integration/master/auth-mailcow.php -O $etcPth/auth-mailcow.php
 fi
 
 # add config settings
